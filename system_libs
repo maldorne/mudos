@@ -1,0 +1,2 @@
+ -lbsd-compat -ldl -lm -lcrypt
+
