@@ -118,13 +118,8 @@ int dos_style_link PROT((char *, char *));
 #  include <alloca.h>
 #endif
 
-
-/* Added neverbot, try to compile with modern gcc */
-#include <stdarg.h>
-
 /* varargs.h distributed with Mac OSX is broken */
-/*
-#if defined(__APPLE__) && defined(__GNUC__)
+#if (defined(__APPLE__) && defined(__GNUC__)) || __GNUC__ > 2
 #include <stdarg.h>
 #else
 #ifdef INCL_STDARG_H
@@ -133,7 +128,6 @@ int dos_style_link PROT((char *, char *));
 #  include <varargs.h>
 #endif
 #endif
-*/
 
 #ifdef INCL_BSTRING_H
 #include <bstring.h>
