@@ -1,6 +1,6 @@
 #include "std.h"
 #if defined(LPC_TO_C) && defined(BINARIES)
-#define SUPRESS_COMPILER_INLINES
+#define SUPPRESS_COMPILER_INLINES
 #include "compile_file.h"
 #include "file_incl.h"
 #include "interface.h"
