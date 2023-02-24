@@ -32,4 +32,9 @@ The `master` branch is empty, try any other branch to see its contents.
  - `v22.2b13` 
    - Working with Docker.
  - `v22.2b14`
-   - Pending.
+   - Working with Docker.
+
+If you want to test the images in your local machine, you can use them directly 
+from Docker Hub.
+
+https://hub.docker.com/repository/docker/neverbot/maldorne-mudos/general
