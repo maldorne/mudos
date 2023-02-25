@@ -105,16 +105,11 @@ int dos_style_link PROT((char *, char *));
 #  include <alloca.h>
 #endif
 
-/* Added neverbot, try to compile with modern gcc */
-#include <stdarg.h>
-
-/*
 #ifdef INCL_STDARG_H
 #  include <stdarg.h>
 #else
 #  include <varargs.h>
 #endif
-*/
 
 #ifdef INCL_BSTRING_H
 #include <bstring.h>
