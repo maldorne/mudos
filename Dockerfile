@@ -6,7 +6,7 @@
 FROM debian/eol:jessie-slim AS debian-7
 
 # install needed tools
-RUN apt-get update && apt-get install -y --force-yes git gcc bison make
+RUN apt-get update && apt-get install -y --force-yes git gcc bison make libbsd-dev
 
 # create group and user, with uids
 RUN groupadd -g 4200 mud
