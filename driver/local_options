@@ -593,14 +593,14 @@
  * be removed.
  */
 /* MAX_LOCAL: maximum number of local variables allowed per LPC function */
-#define CFG_MAX_LOCAL_VARIABLES 		25
+#define CFG_MAX_LOCAL_VARIABLES     25
 /* MAX_EFUN_SOCKS: maximum number of efun sockets */
-#define CFG_MAX_EFUN_SOCKS 			16
+#define CFG_MAX_EFUN_SOCKS          16
 
-#define CFG_EVALUATOR_STACK_SIZE		1000
-#define CFG_COMPILER_STACK_SIZE			200
-#define CFG_MAX_CALL_DEPTH			30
-#define CFG_LIVING_HASH_SIZE			256
+#define CFG_EVALUATOR_STACK_SIZE    1000
+#define CFG_COMPILER_STACK_SIZE        200
+#define CFG_MAX_CALL_DEPTH       30
+#define CFG_LIVING_HASH_SIZE        256
 
 /* NEXT_MALLOC_DEBUG: define this if using a NeXT and you want to enable
  *   the malloc_check() and/or malloc_debug() efuns.  Run the 'man malloc_debug'
