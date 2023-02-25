@@ -120,7 +120,7 @@
 /* HAS_STATUS_TYPE: old MudOS drivers had a 'status' type which was
  * identical to the 'int' type.  Define this to bring it back.
  */
-#define HAS_STATUS_TYPE
+#undef HAS_STATUS_TYPE
 
 /* SANE_EXPLODE_STRING: define this if you want to prevent explode_string
  *   from stripping off more than one leading delimeters.  #undef it for the
@@ -155,7 +155,7 @@
 /* NO_WIZARDS: for historical reasons, MudOS used to keep track of who
    is and isn't a wizard.  Defining this removes that completely.
    If this is defined, the wizardp() and related efuns don't exist */
-#undef NO_WIZARDS
+#define NO_WIZARDS
 
 /* OLD_TYPE_BEHAVIOR: reintroduces a bug in type-checking that effectively
  * renders compile time type checking useless.  For backwards compatibility.
@@ -197,7 +197,7 @@
  * On by default, because newer libs use catch() alot, and it's confusing
  * if the errors don't show up in the logs.
  */
-#undef LOG_CATCHES
+#define LOG_CATCHES
 
 /* ARGUMENTS_IN_TRACEBACK: prints out function call arguments in error
  *   tracebacks, to aid in debugging.  Note: it prints the values of
@@ -281,7 +281,7 @@
  * PRAGMA_ERROR_CONTEXT:include some text telling where on the line a
  *                      compilation error occured.
  */
-#define DEFAULT_PRAGMAS PRAGMA_WARNINGS
+#define DEFAULT_PRAGMAS PRAGMA_WARNINGS + PRAGMA_STRICT_TYPES + PRAGMA_ERROR_CONTEXT
 
 /* LAZY_RESETS: if this is defined, an object will only have reset()
  *   called in it when it is touched via call_other() or move_object()
@@ -383,7 +383,7 @@
  *   sent directly via add_message()).  This is useful if you want to
  *   build a smart client that does something different with snoop messages.
  */
-#define RECEIVE_SNOOP
+#undef RECEIVE_SNOOP
 
 /* PROFILE_FUNCTIONS: define this to be able to measure the CPU time used by
  *   all of the user-defined functions in each LPC object.  Note: defining
@@ -469,7 +469,7 @@
 /* PACKAGE_PARSER: Natural language parsing efuns for interactive fiction
  *   type applications
  */
-#define PACKAGE_PARSER
+#undef PACKAGE_PARSER
 
 /****************************************************************************
  *                            UID PACKAGE                                   *
@@ -494,7 +494,7 @@
  *   the equivalent of seteuid(getuid(this_object())).  undef AUTO_SETEUID
  *   if you would rather have the euid of the created object be set to 0.
  */
-#undef AUTO_SETEUID
+#define AUTO_SETEUID
 
 /* AUTO_TRUST_BACKBONE: define this if you want objects with the backbone
  *   uid to automatically be trusted and to have their euid set to the uid of
@@ -561,7 +561,7 @@
  * call.  SunOS and IRIX do, as do a number of others.  AIX and Ultrix don't.
  * Linux does if you are using ELF.
  */
-#define RUNTIME_LOADING
+#undef RUNTIME_LOADING
 
 /* TRACE_CODE: define this to enable code tracing (the driver will print
  *   out the previous lines of code to an error) eval_instruction() runs about
@@ -599,7 +599,7 @@
 
 #define CFG_EVALUATOR_STACK_SIZE    1000
 #define CFG_COMPILER_STACK_SIZE        200
-#define CFG_MAX_CALL_DEPTH       30
+#define CFG_MAX_CALL_DEPTH       50
 #define CFG_LIVING_HASH_SIZE        256
 
 /* NEXT_MALLOC_DEBUG: define this if using a NeXT and you want to enable
