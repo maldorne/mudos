@@ -120,13 +120,13 @@
 /* HAS_STATUS_TYPE: old MudOS drivers had a 'status' type which was
  * identical to the 'int' type.  Define this to bring it back.
  */
-#define HAS_STATUS_TYPE
+#undef HAS_STATUS_TYPE
 
 /* SANE_EXPLODE_STRING: define this if you want to prevent explode_string
  *   from stripping off more than one leading delimeters.  #undef it for the
  *   old behavior.
  */
-#undef SANE_EXPLODE_STRING
+#define SANE_EXPLODE_STRING
 
 /* CAST_CALL_OTHERS: define this if you want to require casting of call_other's;
  *   this was the default behavior of the driver prior to this addition.
@@ -142,7 +142,7 @@
 /* NO_LIGHT: define this to disable the set_light() and driver maintenance
  *   of light levels in objects.  You can simulate it via LPC if you want...
  */
-#undef NO_LIGHT
+#define NO_LIGHT
 
 /* NO_ADD_ACTION: define this to remove add_action, commands, livings, etc.
    process_input() then becomes the only way to deal with player input. */
@@ -156,7 +156,7 @@
 /* NO_WIZARDS: for historical reasons, MudOS used to keep track of who
    is and isn't a wizard.  Defining this removes that completely.
    If this is defined, the wizardp() and related efuns don't exist */
-#undef NO_WIZARDS
+#define NO_WIZARDS
 
 /* OLD_TYPE_BEHAVIOR: reintroduces a bug in type-checking that effectively
  * renders compile time type checking useless.  For backwards compatibility.
@@ -198,7 +198,7 @@
  * On by default, because newer libs use catch() alot, and it's confusing
  * if the errors don't show up in the logs.
  */
-#undef LOG_CATCHES
+#define LOG_CATCHES
 
 /* ARGUMENTS_IN_TRACEBACK: prints out function call arguments in error
  *   tracebacks, to aid in debugging.  Note: it prints the values of
@@ -282,7 +282,7 @@
  * PRAGMA_ERROR_CONTEXT:include some text telling where on the line a
  *                      compilation error occured.
  */
-#define DEFAULT_PRAGMAS PRAGMA_WARNINGS 
+#define DEFAULT_PRAGMAS PRAGMA_WARNINGS + PRAGMA_ERROR_CONTEXT
 
 /* LAZY_RESETS: if this is defined, an object will only have reset()
  *   called in it when it is touched via call_other() or move_object()
@@ -418,7 +418,7 @@
  *   saved.  Allowing any file by any wizard to be saved as a
  *   binary is convenient, but may take up a lot of disk space.
  */
-#undef BINARIES
+#define BINARIES
 
 /* ARRAY_RESERVED_WORD: If this is defined then the word 'array' can
  *   be used to define arrays, as in:
@@ -495,7 +495,7 @@
  *   the equivalent of seteuid(getuid(this_object())).  undef AUTO_SETEUID
  *   if you would rather have the euid of the created object be set to 0.
  */
-#undef AUTO_SETEUID
+#define AUTO_SETEUID
 
 /* AUTO_TRUST_BACKBONE: define this if you want objects with the backbone
  *   uid to automatically be trusted and to have their euid set to the uid of
@@ -553,7 +553,7 @@
  * [NOTE: BINARIES must also be defined for LPC->C to work.  Actually
  *  using binaries is not required, though.]
  */
-#undef LPC_TO_C
+#define LPC_TO_C
 
 /* RUNTIME_LOADING: On systems which support it, it allows LPC->C compilation
  * 'on the fly' without having to recompile the driver.
@@ -562,7 +562,7 @@
  * call.  SunOS and IRIX do, as do a number of others.  AIX and Ultrix don't.
  * Linux does if you are using ELF.
  */
-#define RUNTIME_LOADING
+#undef RUNTIME_LOADING
 
 /* TRACE_CODE: define this to enable code tracing (the driver will print
  *   out the previous lines of code to an error) eval_instruction() runs about
@@ -600,7 +600,7 @@
 
 #define CFG_EVALUATOR_STACK_SIZE		1000
 #define CFG_COMPILER_STACK_SIZE			200
-#define CFG_MAX_CALL_DEPTH			30
+#define CFG_MAX_CALL_DEPTH       50
 #define CFG_LIVING_HASH_SIZE			256
 
 /* NEXT_MALLOC_DEBUG: define this if using a NeXT and you want to enable
@@ -628,6 +628,6 @@
  * [NOTE: malloc_debug(6) is a good compromise between efficiency and
  *  completeness of malloc debugging (malloc/free will be about half as fast).]
  */
-#undef NEXT_MALLOC_DEBUG
+#define NEXT_MALLOC_DEBUG
 
 #endif
