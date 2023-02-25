@@ -18,7 +18,7 @@ the USENET groups rec.games.mud.{admin,announce,misc,lp,tiny,diku}.
 
 ## Branches
 
-This branch of the project contains the version `v21.7_fr`, ready to use.
+This branch of the project contains the version `v21.7b21_fr`, ready to use.
 
 The `master` branch is empty, try any other branch to see different versions.
 
@@ -26,11 +26,11 @@ The `master` branch is empty, try any other branch to see different versions.
 
 - Build the container image (from project base directory)
 
-  `docker build --no-cache -t neverbot/maldorne-mudos:v21.7_fr -f Dockerfile .`
+  `docker build --no-cache -t neverbot/maldorne-mudos:v21.7b21_fr -f Dockerfile .`
 
 - Run the container and take a look inside using a terminal
 
-  `docker run --rm -ti neverbot/maldorne-mudos:v21.7_fr /bin/bash`
+  `docker run --rm -ti neverbot/maldorne-mudos:v21.7b21_fr /bin/bash`
 
   Inside the container, in `/opt/mud`, you can find the directories `driver` 
   (with the source code of MudOS) and `bin`, with the two binaries needed
@@ -38,4 +38,4 @@ The `master` branch is empty, try any other branch to see different versions.
 
 - Publish the container in Docker Hub
 
-  `docker push neverbot/maldorne-mudos:v21.7_fr`
+  `docker push neverbot/maldorne-mudos:v21.7b21_fr`
