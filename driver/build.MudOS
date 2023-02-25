@@ -15,7 +15,7 @@ DRIVER_BIN=driver
 #PROOF=proof
 
 # Set INSTALL_DIR to the directory where you want to install the executables.
-INSTALL_DIR="../v21.7_bin"
+INSTALL_DIR="../bin"
 
 #Enable warnings from the compiler (gcc), if wanted.
 #WARN=-Wall
