@@ -18,12 +18,12 @@ the USENET groups rec.games.mud.{admin,announce,misc,lp,tiny,diku}.
 
 ## Branches
 
-On this repository, you could find different branches for the following versions of MudOS:
+On this repository, you could find different branches for the following versions of MudOS (from newer to older):
 
+ - `v22.2b14`
+ - `v22.2b13`
  - `v21.7`
  - `v21.7b21_fr`
- - `v22.2b13`
- - `v22.2b14`
 
 The `master` branch is empty, try any other branch to see its contents.
 
