@@ -120,7 +120,7 @@
 /* HAS_STATUS_TYPE: old MudOS drivers had a 'status' type which was
  * identical to the 'int' type.  Define this to bring it back.
  */
-#undef HAS_STATUS_TYPE
+#define HAS_STATUS_TYPE
 
 /* SANE_EXPLODE_STRING: define this if you want to prevent explode_string
  *   from stripping off more than one leading delimeters.  #undef it for the
