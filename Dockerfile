@@ -30,6 +30,8 @@ FROM debian:11.6-slim AS debian-11
 
 RUN apt-get update && apt-get upgrade -y --force-yes
 
+RUN apt-get install -y --force-yes libbsd-dev
+
 # temporary, will be removed from final image
 RUN apt-get install -y --force-yes procps telnet
 
