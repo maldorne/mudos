@@ -126,7 +126,7 @@
  *   from stripping off more than one leading delimeters.  #undef it for the
  *   old behavior.
  */
-#define SANE_EXPLODE_STRING
+#undef SANE_EXPLODE_STRING
 
 /* CAST_CALL_OTHERS: define this if you want to require casting of call_other's;
  *   this was the default behavior of the driver prior to this addition.
@@ -142,7 +142,7 @@
 /* NO_LIGHT: define this to disable the set_light() and driver maintenance
  *   of light levels in objects.  You can simulate it via LPC if you want...
  */
-#define NO_LIGHT
+#undef NO_LIGHT
 
 /* NO_ADD_ACTION: define this to remove add_action, commands, livings, etc.
    process_input() then becomes the only way to deal with player input. */
@@ -418,7 +418,7 @@
  *   saved.  Allowing any file by any wizard to be saved as a
  *   binary is convenient, but may take up a lot of disk space.
  */
-#define BINARIES
+#undef BINARIES
 
 /* ARRAY_RESERVED_WORD: If this is defined then the word 'array' can
  *   be used to define arrays, as in:
@@ -495,7 +495,7 @@
  *   the equivalent of seteuid(getuid(this_object())).  undef AUTO_SETEUID
  *   if you would rather have the euid of the created object be set to 0.
  */
-#define AUTO_SETEUID
+#undef AUTO_SETEUID
 
 /* AUTO_TRUST_BACKBONE: define this if you want objects with the backbone
  *   uid to automatically be trusted and to have their euid set to the uid of
@@ -553,7 +553,7 @@
  * [NOTE: BINARIES must also be defined for LPC->C to work.  Actually
  *  using binaries is not required, though.]
  */
-#define LPC_TO_C
+#undef LPC_TO_C
 
 /* RUNTIME_LOADING: On systems which support it, it allows LPC->C compilation
  * 'on the fly' without having to recompile the driver.
@@ -562,7 +562,7 @@
  * call.  SunOS and IRIX do, as do a number of others.  AIX and Ultrix don't.
  * Linux does if you are using ELF.
  */
-#undef RUNTIME_LOADING
+#define RUNTIME_LOADING
 
 /* TRACE_CODE: define this to enable code tracing (the driver will print
  *   out the previous lines of code to an error) eval_instruction() runs about
@@ -594,14 +594,14 @@
  * be removed.
  */
 /* MAX_LOCAL: maximum number of local variables allowed per LPC function */
-#define CFG_MAX_LOCAL_VARIABLES 		25
+#define CFG_MAX_LOCAL_VARIABLES     25
 /* MAX_EFUN_SOCKS: maximum number of efun sockets */
-#define CFG_MAX_EFUN_SOCKS 			16
+#define CFG_MAX_EFUN_SOCKS      16
 
-#define CFG_EVALUATOR_STACK_SIZE		1000
-#define CFG_COMPILER_STACK_SIZE			200
-#define CFG_MAX_CALL_DEPTH       50
-#define CFG_LIVING_HASH_SIZE			256
+#define CFG_EVALUATOR_STACK_SIZE    1000
+#define CFG_COMPILER_STACK_SIZE     200
+#define CFG_MAX_CALL_DEPTH      30
+#define CFG_LIVING_HASH_SIZE      256
 
 /* NEXT_MALLOC_DEBUG: define this if using a NeXT and you want to enable
  *   the malloc_check() and/or malloc_debug() efuns.  Run the 'man malloc_debug'
@@ -628,6 +628,6 @@
  * [NOTE: malloc_debug(6) is a good compromise between efficiency and
  *  completeness of malloc debugging (malloc/free will be about half as fast).]
  */
-#define NEXT_MALLOC_DEBUG
+#undef NEXT_MALLOC_DEBUG
 
 #endif
