@@ -627,6 +627,6 @@
  * [NOTE: malloc_debug(6) is a good compromise between efficiency and
  *  completeness of malloc debugging (malloc/free will be about half as fast).]
  */
-#define NEXT_MALLOC_DEBUG
+#undef NEXT_MALLOC_DEBUG
 
 #endif
