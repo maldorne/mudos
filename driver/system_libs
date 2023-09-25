@@ -1,2 +1,2 @@
- -lbsd-compat -ldl -lm -lcrypt
+ -ldl -lm -lcrypt
 
