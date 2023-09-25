@@ -126,7 +126,7 @@
  *   from stripping off more than one leading delimeters.  #undef it for the
  *   old behavior.
  */
-#undef SANE_EXPLODE_STRING
+#define SANE_EXPLODE_STRING
 
 /* CAST_CALL_OTHERS: define this if you want to require casting of call_other's;
  *   this was the default behavior of the driver prior to this addition.
@@ -142,7 +142,7 @@
 /* NO_LIGHT: define this to disable the set_light() and driver maintenance
  *   of light levels in objects.  You can simulate it via LPC if you want...
  */
-#undef NO_LIGHT
+#define NO_LIGHT
 
 /* NO_ADD_ACTION: define this to remove add_action, commands, livings, etc.
    process_input() then becomes the only way to deal with player input. */
@@ -418,7 +418,7 @@
  *   saved.  Allowing any file by any wizard to be saved as a
  *   binary is convenient, but may take up a lot of disk space.
  */
-#undef BINARIES
+#define BINARIES
 
 /* ARRAY_RESERVED_WORD: If this is defined then the word 'array' can
  *   be used to define arrays, as in:
@@ -495,7 +495,7 @@
  *   the equivalent of seteuid(getuid(this_object())).  undef AUTO_SETEUID
  *   if you would rather have the euid of the created object be set to 0.
  */
-#undef AUTO_SETEUID
+#define AUTO_SETEUID
 
 /* AUTO_TRUST_BACKBONE: define this if you want objects with the backbone
  *   uid to automatically be trusted and to have their euid set to the uid of
@@ -553,7 +553,7 @@
  * [NOTE: BINARIES must also be defined for LPC->C to work.  Actually
  *  using binaries is not required, though.]
  */
-#undef LPC_TO_C
+#define LPC_TO_C
 
 /* RUNTIME_LOADING: On systems which support it, it allows LPC->C compilation
  * 'on the fly' without having to recompile the driver.
