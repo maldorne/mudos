@@ -1,9 +1,9 @@
 
 # #### #### #### #### #### #### #### #### #### #### #### #### ####
-#  first stage, build using debian jessie (debian 7) and gcc 4.9.2
+#  first stage, build using debian sage (debian 3.1) and gcc 3.3.5
 # #### #### #### #### #### #### #### #### #### #### #### #### ####
 
-FROM debian/eol:jessie-slim AS debian-7
+FROM debian/eol:sarge-slim
 
 # update sources list
 COPY container/sources.list /etc/apt/sources.list
@@ -14,8 +14,8 @@ RUN apt-get -o Acquire::Check-Valid-Until=false update
 
 
 # install needed tools
-RUN apt-get update && apt-get -f dist-upgrade 
-RUN apt-get install -f -y --force-yes git gcc bison make
+RUN apt-get update && apt-get -f dist-upgrade
+RUN apt-get install -f -y --force-yes git gcc bison make libc6-dev
 
 # # show current OS version
 # RUN cat /etc/issue
