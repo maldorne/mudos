@@ -2,6 +2,9 @@
   <img width="400" alt="MudOS logo" src="/mudos_logo.webp">
 </p>
 
+> [!IMPORTANT]  
+> The `master` branch is empty, the code for different versions is located in other branches.
+
 # MudOS MUD driver
 
 This was the old description of the MudOS project included in its old `README` file:
