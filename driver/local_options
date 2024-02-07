@@ -156,7 +156,7 @@
 /* NO_WIZARDS: for historical reasons, MudOS used to keep track of who
    is and isn't a wizard.  Defining this removes that completely.
    If this is defined, the wizardp() and related efuns don't exist */
-#define NO_WIZARDS
+#undef NO_WIZARDS
 
 /* OLD_TYPE_BEHAVIOR: reintroduces a bug in type-checking that effectively
  * renders compile time type checking useless.  For backwards compatibility.
