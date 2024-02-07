@@ -8,8 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build and publish image
+      - name: Login onto ghcr
         run: |
           docker login --username maldorne-bot --password ${{ secrets.MALDORNE_BOT_GHCR_TOKEN }} ghcr.io
+      - name: Build image
+        run: |
           docker build --no-cache . -t ghcr.io/maldorne/mudos:v21.7
+      - name: Publish image
+        run: |
           docker push ghcr.io/maldorne/mudos:v21.7
