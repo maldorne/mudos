@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Login onto ghcr
         run: |
-          docker login --user maldorne-bot --password ${{ secrets.MALDORNE_BOT_GHCR_TOKEN }} ghcr.io
+          docker login --username maldorne-bot --password ${{ secrets.MALDORNE_BOT_GHCR_TOKEN }} ghcr.io
       - name: Build image
         run: |
           docker build --no-cache . -t ghcr.io/maldorne/mudos:v21.7
