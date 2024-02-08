@@ -1,6 +1,6 @@
 
 # #### #### #### #### #### #### #### #### #### #### #### #### ####
-#  first stage, build using debian sage (debian 3.1) and gcc 3.3.5
+#  first stage, build using debian sarge (debian 3.1) and gcc 3.3.5
 # #### #### #### #### #### #### #### #### #### #### #### #### ####
 
 FROM debian/eol:sarge-slim
