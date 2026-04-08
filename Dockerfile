@@ -37,6 +37,10 @@ WORKDIR /opt/mud/driver
 #   -fcommon          : pre-gcc-10 behaviour for tentative definitions
 #   -Wno-* / -Wno-error=*:
 #                       tolerate K&R prototypes, implicit int, mismatches, etc.
+# ensure shell scripts are executable even when the repo was cloned on a
+# filesystem (e.g. NTFS) that does not preserve the unix execute bit
+RUN chmod +x build.MudOS
+
 RUN sed -i 's|^CFLAGS="\$OSFLAGS|CFLAGS="-m32 -fgnu89-inline -fcommon -Wno-implicit-function-declaration -Wno-implicit-int -Wno-return-type -Wno-int-conversion -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion $OSFLAGS|' build.MudOS
 
 RUN make clean || true

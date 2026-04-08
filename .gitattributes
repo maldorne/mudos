@@ -1,0 +1,14 @@
+# Force LF line endings on text files so the Dockerfile build works
+# regardless of the host OS where the repo was cloned (Windows clients
+# would otherwise convert shell scripts to CRLF and break the build).
+
+* text=auto eol=lf
+
+*.sh        text eol=lf
+*.MudOS     text eol=lf
+GNUmakefile* text eol=lf
+Makefile*   text eol=lf
+*.c         text eol=lf
+*.h         text eol=lf
+*.y         text eol=lf
+Dockerfile  text eol=lf
