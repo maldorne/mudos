@@ -1,34 +1,48 @@
 
 # #### #### #### #### #### #### #### #### #### #### #### #### ####
-#  first stage, build using debian sarge (debian 3.1) and gcc 3.3.5
+#  experimental: build MudOS v21.7b21_fr on modern Debian 12 (bookworm)
+#  with gcc 12, using compat flags for old K&R / pre-ANSI C code
 # #### #### #### #### #### #### #### #### #### #### #### #### ####
 
-FROM debian/eol:sarge-slim
+FROM debian:bookworm-slim
 
-# update sources list
-COPY container/sources.list /etc/apt/sources.list
-RUN apt-get -o Acquire::Check-Valid-Until=false update
+# install build deps. git+ssh are also added so the resulting image
+# can later be reused as a runner that clones the game code at startup.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      build-essential bison make gcc libc6-dev \
+      git openssh-client ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 
-# install needed tools
-RUN apt-get update && apt-get -f dist-upgrade
-RUN apt-get install -f -y --force-yes git gcc bison make libc6-dev
-
-# create group and user, with uids
-RUN groupadd -g 4200 mud
-RUN useradd -u 4201 -g 4200 -ms /bin/bash mud
+# create group and user, same uids as the legacy image
+RUN groupadd -g 4200 mud \
+ && useradd  -u 4201 -g 4200 -ms /bin/bash mud
 USER mud
 
 WORKDIR /opt/mud
 COPY --chown=mud:mud driver /opt/mud/driver/
 
 WORKDIR /opt/mud/driver
-RUN make clean
+
+# build.MudOS reassigns CFLAGS internally and ignores any ENV CFLAGS we set,
+# so we patch the script with sed to APPEND our extra flags after its own
+# detection, instead of overwriting the line.
+#
+# Extra flags to make gcc 12 accept legacy MudOS C source:
+#   -fgnu89-inline    : restore the pre-C99 GNU semantics of the `inline`
+#                       keyword (otherwise `INLINE` functions like whashstr
+#                       are not emitted as external symbols and the link fails)
+#   -fcommon          : pre-gcc-10 behaviour for tentative definitions
+#   -Wno-* / -Wno-error=*:
+#                       tolerate K&R prototypes, implicit int, mismatches, etc.
+RUN sed -i 's|^CFLAGS="\$OSFLAGS|CFLAGS="-fgnu89-inline -fcommon -Wno-implicit-function-declaration -Wno-implicit-int -Wno-return-type -Wno-int-conversion -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion $OSFLAGS|' build.MudOS
+
+RUN make clean || true
 RUN ./build.MudOS
 RUN make
 RUN make install
 
 WORKDIR /opt/mud/
 
-# expose telnet mudos ports
 EXPOSE 9997/tcp
 EXPOSE 5000/tcp
