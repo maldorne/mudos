@@ -4,13 +4,15 @@
 #  with gcc 12, using compat flags for old K&R / pre-ANSI C code
 # #### #### #### #### #### #### #### #### #### #### #### #### ####
 
-FROM debian:bookworm-slim
+FROM --platform=linux/amd64 debian:bookworm-slim
 
 # install build deps. git+ssh are also added so the resulting image
 # can later be reused as a runner that clones the game code at startup.
-RUN apt-get update \
+RUN dpkg --add-architecture i386 \
+ && apt-get update \
  && apt-get install -y --no-install-recommends \
-      build-essential bison make gcc libc6-dev \
+      build-essential bison make gcc gcc-multilib libc6-dev libc6-dev-i386 \
+      libcrypt-dev:i386 \
       git openssh-client ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
@@ -35,7 +37,7 @@ WORKDIR /opt/mud/driver
 #   -fcommon          : pre-gcc-10 behaviour for tentative definitions
 #   -Wno-* / -Wno-error=*:
 #                       tolerate K&R prototypes, implicit int, mismatches, etc.
-RUN sed -i 's|^CFLAGS="\$OSFLAGS|CFLAGS="-fgnu89-inline -fcommon -Wno-implicit-function-declaration -Wno-implicit-int -Wno-return-type -Wno-int-conversion -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion $OSFLAGS|' build.MudOS
+RUN sed -i 's|^CFLAGS="\$OSFLAGS|CFLAGS="-m32 -fgnu89-inline -fcommon -Wno-implicit-function-declaration -Wno-implicit-int -Wno-return-type -Wno-int-conversion -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion $OSFLAGS|' build.MudOS
 
 RUN make clean || true
 RUN ./build.MudOS
