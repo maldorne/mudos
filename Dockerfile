@@ -1,9 +1,13 @@
 
 # #### #### #### #### #### #### #### #### #### #### #### #### ####
-#  experimental: build MudOS v21.7b21_fr on modern Debian 12 (bookworm)
-#  with gcc 12, using compat flags for old K&R / pre-ANSI C code
+#  build MudOS v21.7b21_fr on modern Debian 12 (bookworm) with gcc 12,
+#  using compat flags for old K&R / pre-ANSI C code
 # #### #### #### #### #### #### #### #### #### #### #### #### ####
 
+# We force --platform=linux/amd64 so the resulting image is always built
+# for amd64 regardless of the host architecture (Apple Silicon, Windows
+# ARM, etc). The driver is then compiled as a 32-bit i386 binary inside
+# this amd64 image via gcc-multilib + -m32 (see CFLAGS patch below).
 FROM --platform=linux/amd64 debian:bookworm-slim
 
 # install build deps. git+ssh are also added so the resulting image
@@ -26,22 +30,35 @@ COPY --chown=mud:mud driver /opt/mud/driver/
 
 WORKDIR /opt/mud/driver
 
-# build.MudOS reassigns CFLAGS internally and ignores any ENV CFLAGS we set,
-# so we patch the script with sed to APPEND our extra flags after its own
-# detection, instead of overwriting the line.
-#
-# Extra flags to make gcc 12 accept legacy MudOS C source:
-#   -fgnu89-inline    : restore the pre-C99 GNU semantics of the `inline`
-#                       keyword (otherwise `INLINE` functions like whashstr
-#                       are not emitted as external symbols and the link fails)
-#   -fcommon          : pre-gcc-10 behaviour for tentative definitions
-#   -Wno-* / -Wno-error=*:
-#                       tolerate K&R prototypes, implicit int, mismatches, etc.
 # ensure shell scripts are executable even when the repo was cloned on a
 # filesystem (e.g. NTFS) that does not preserve the unix execute bit
 RUN chmod +x build.MudOS
 
-RUN sed -i 's|^CFLAGS="\$OSFLAGS|CFLAGS="-m32 -fgnu89-inline -fcommon -Wno-implicit-function-declaration -Wno-implicit-int -Wno-return-type -Wno-int-conversion -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion $OSFLAGS|' build.MudOS
+# build.MudOS reassigns CFLAGS internally and ignores any ENV CFLAGS we set,
+# so we patch the script with sed to PREPEND our extra flags to its own
+# detection, instead of overwriting the line.
+#
+# Extra flags to make gcc 12 accept the legacy MudOS C source:
+#   -m32                : compile as 32-bit so int and pointer have the same
+#                         width, sidestepping the implicit-int pointer
+#                         truncation that breaks K&R-style functions on amd64
+#   -fgnu89-inline      : restore the pre-C99 GNU semantics of `inline` so
+#                         INLINE functions like whashstr are emitted as
+#                         external symbols and the final link succeeds
+#   -fcommon            : pre-gcc-10 behaviour for tentative definitions
+#   -Wno-* / -Wno-error=*:
+#                         tolerate K&R prototypes, implicit int and mismatches
+RUN set -eux; \
+    EXTRA="-m32"; \
+    EXTRA="$EXTRA -fgnu89-inline -fcommon"; \
+    EXTRA="$EXTRA -Wno-implicit-function-declaration"; \
+    EXTRA="$EXTRA -Wno-implicit-int"; \
+    EXTRA="$EXTRA -Wno-return-type"; \
+    EXTRA="$EXTRA -Wno-int-conversion"; \
+    EXTRA="$EXTRA -Wno-error=implicit-function-declaration"; \
+    EXTRA="$EXTRA -Wno-error=implicit-int"; \
+    EXTRA="$EXTRA -Wno-error=int-conversion"; \
+    sed -i "s|^CFLAGS=\"\$OSFLAGS|CFLAGS=\"$EXTRA \$OSFLAGS|" build.MudOS
 
 RUN make clean || true
 RUN ./build.MudOS
