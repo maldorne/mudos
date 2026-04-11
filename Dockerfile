@@ -58,7 +58,7 @@ RUN set -eux; \
     EXTRA="$EXTRA -Wno-error=implicit-function-declaration"; \
     EXTRA="$EXTRA -Wno-error=implicit-int"; \
     EXTRA="$EXTRA -Wno-error=int-conversion"; \
-    sed -i "s|^CFLAGS=\"\$OSFLAGS|CFLAGS=\"$EXTRA \$OSFLAGS|" build.MudOS
+    sed -i "s|^CFLAGS=\"|CFLAGS=\"$EXTRA |" build.MudOS
 
 RUN make clean || true
 RUN ./build.MudOS
