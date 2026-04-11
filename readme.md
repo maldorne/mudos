@@ -46,7 +46,13 @@ from the [Github Container Registry](https://github.com/maldorne/mudos/pkgs/cont
 
 Every branch now compiles on **Debian 12 Bookworm** with `gcc 12`, replacing the old Debian Sarge (2005) + `gcc 3.3.5` pipeline. The driver itself is still built as a 32-bit i386 ELF binary — `int` and `void *` need to be the same width for the K&R C code in MudOS to behave correctly — but the surrounding container userland is now fully modern: current `glibc`, current `git`/`openssh`, security updates, and any host architecture that can run Docker.
 
-To make `gcc 12` accept the legacy source without patching it, the `Dockerfile` injects a set of compatibility flags into `build.MudOS` via `sed`: `-m32` (i386), `-fgnu89-inline` (pre-C99 inline semantics), `-fcommon` (pre-`gcc 10` tentative definitions), and several `-Wno-*` / `-Wno-error=*` flags to tolerate K&R-style prototypes, implicit int and mismatched conversions. The full story — including the 64-bit pointer-truncation segfault that drove the decision to go back to i386 — is in the blog post [Modernizing the MudOS Driver: From Sarge to Bookworm](https://maldorne.org/2026/04/09/modernizing-the-mudos-driver/).
+All four version branches (`v21.7b21_fr`, `v21.7`, `v22.2b13`, `v22.2b14`) share the **exact same `Dockerfile` recipe**, differing only in the version string printed in the header comment. Porting any future patch or fix across branches is a simple copy-paste.
+
+To make `gcc 12` accept the legacy source without patching it, the `Dockerfile` injects a set of compatibility flags into `build.MudOS` via `sed`: `-m32` (i386), `-fgnu89-inline` (pre-C99 inline semantics), `-fcommon` (pre-`gcc 10` tentative definitions), and several `-Wno-*` / `-Wno-error=*` flags to tolerate K&R-style prototypes, implicit int and mismatched conversions.
+
+A second patch is applied to the generated `system_libs` file (produced by `./edit_source -configure`) to strip `-ly` (the legacy yacc runtime library, not needed — MudOS provides its own `yyerror`/`main`) and `-lnsl` (the legacy network-services library, whose functions are now part of glibc proper). Both of these libraries used to exist on Sarge but are no longer shipped for i386 on modern Debian, so the final link step fails without this patch.
+
+The full story — including the 64-bit pointer-truncation segfault that drove the decision to go back to i386 — is in the blog post [Modernizing the MudOS Driver: From Sarge to Bookworm](https://maldorne.org/2026/04/09/modernizing-the-mudos-driver/).
 
 ## Some notes about version history
 
