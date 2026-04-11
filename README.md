@@ -32,12 +32,12 @@ The `master` branch is empty, try any other branch to see its contents.
 
 ### Current status of each branch
 
-| Branch        | Notes                   | Status              |
-| ------------- | ----------------------- | ------------------- |
-| `v22.2b14`    | Last version of MudOS.  | Working with Docker |
-| `v22.2b13`    |                         | Working with Docker |
-| `v21.7`       |                         | Working with Docker |
-| `v21.7b21_fr` |                         | Working with Docker |
+| Branch        | Notes                  | Status              |
+| ------------- | ---------------------- | ------------------- |
+| `v22.2b14`    | Last version of MudOS. | Working with Docker |
+| `v22.2b13`    |                        | Working with Docker |
+| `v21.7`       |                        | Working with Docker |
+| `v21.7b21_fr` |                        | Working with Docker |
 
 If you want to test the images in your local machine, you can use them directly 
 from the [Github Container Registry](https://github.com/maldorne/mudos/pkgs/container/mudos).
@@ -56,9 +56,9 @@ from the [Github Container Registry](https://github.com/maldorne/mudos/pkgs/cont
 
 These are the versions we currently run (or plan to run) in the [Maldorne](https://maldorne.org) MUD cluster:
 
-| Version       | Used by                                                              | Notes                                                                                                         |
-| ------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `v21.7b21_fr` | [iluminado](https://maldorne.org/games/#iluminado-mud)               | In production.                                                                                                |
-| `v22.2b13`    | [Ciudad Capital](https://maldorne.org/games/#ciudad-capital-v1)      | In production.                                                                                                |
-| `v21.7`       | —                                                                    | Compiled and published, but not used by any of our MUDs. Should work; feedback from other games very welcome. |
-| `v22.2b14`    | —                                                                    | Compiled and published, but not used by any of our MUDs. Should work; feedback from other games very welcome. |
+| Version       | Used by                                                         | Notes                                                                                                         |
+| ------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `v21.7b21_fr` | [Iluminado](https://maldorne.org/games/#iluminado-mud)          | In production.                                                                                                |
+| `v22.2b13`    | [Ciudad Capital](https://maldorne.org/games/#ciudad-capital-v1) | In production.                                                                                                |
+| `v21.7`       | —                                                               | Compiled and published, but not used by any of our MUDs. Should work; feedback from other games very welcome. |
+| `v22.2b14`    | —                                                               | Compiled and published, but not used by any of our MUDs. Should work; feedback from other games very welcome. |
