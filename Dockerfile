@@ -62,6 +62,21 @@ RUN set -eux; \
 
 RUN make clean || true
 RUN ./build.MudOS
+
+# Run `edit_source -configure` in isolation (via the `configure.h` make target,
+# which is what generates configure.h + system_libs together) so we can patch
+# the resulting `system_libs` file BEFORE the final link step. Legacy libraries
+# that `check_library()` in edit_source probes for but that modern Debian 12
+# amd64 + gcc-multilib i386 no longer ships:
+#   -ly   : yacc runtime library (historical, not needed — MudOS provides its
+#           own yyerror/main implementations, liby was only there to supply
+#           defaults on old Unix systems).
+#   -lnsl : legacy network services library, whose functions (gethostbyname,
+#           etc.) are now part of glibc proper; bookworm still ships
+#           libnsl.so on amd64 but not on i386, and it is not actually needed.
+RUN make configure.h
+RUN sed -i -E 's/(^| )-ly($| )/\1\2/g; s/(^| )-lnsl($| )/\1\2/g' system_libs
+
 RUN make
 RUN make install
 
