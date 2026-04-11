@@ -30,30 +30,19 @@ On this repository, you could find different branches for the following versions
 
 The `master` branch is empty, try any other branch to see its contents.
 
-## Current status of each branch
+### Current status of each branch
 
- - `v22.2b14` (last version of MudOS)
-   - Working with Docker.
- - `v22.2b13` 
-   - Working with Docker.
- - `v21.7`
-   - Working with Docker.
- - `v21.7b21_fr`
-   - Working with Docker.
+| Branch        | Notes                   | Status              |
+| ------------- | ----------------------- | ------------------- |
+| `v22.2b14`    | Last version of MudOS.  | Working with Docker |
+| `v22.2b13`    |                         | Working with Docker |
+| `v21.7`       |                         | Working with Docker |
+| `v21.7b21_fr` |                         | Working with Docker |
 
 If you want to test the images in your local machine, you can use them directly 
 from the [Github Container Registry](https://github.com/maldorne/mudos/pkgs/container/mudos).
 
-## Usage at Maldorne
-
-These are the versions we currently run (or plan to run) in the [Maldorne](https://maldorne.org) MUD cluster:
-
- - `v21.7b21_fr` — used in production by [iluminado](https://maldorne.org/games/#iluminado-mud).
- - `v22.2b13` — used in production by [Ciudad Capital](https://maldorne.org/games/#ciudad-capital-v1).
- - `v21.7` — compiled and published, but not used by any of our MUDs at the moment. It should work, but it has not been battle-tested in production, so any feedback from people running games on top of it is very welcome.
- - `v22.2b14` — same as above: compiled and published, not used by our MUDs right now. Should work, feedback welcome.
-
-### Some notes
+## Some notes about version history
 
 - Versions of MudOS advanced up to `0.8` updating its minor version (using something like semantic versioning).
 - `0.9` started naming versions with `0.9.x`, from `0.9.1` to `0.9.19`.
@@ -62,3 +51,14 @@ These are the versions we currently run (or plan to run) in the [Maldorne](https
 - **v21** went from `v21.1` to `v21.7`.
 - I'm not really sure about the contents of the `v21.7b21_fr` branch, seems to be a fork made from the last beta version of `v21.7` (`v21.7b22` was renamed as `v21.7`). It seems to have a different parser and you can define in the `local_options` file: `#define DISCWORLD_ADD_ACTION`. It's included here, but I'm not really sure about the changes included, and the `v21.7` branch should be newer, although without some of the changes done in that fork.
 - **v22** had `v22.1` and several alphas and betas of `v22.2`, which was never published. `v22.2b14` (Dec 12 2003) was the last version of MudOS.
+
+## Usage at Maldorne
+
+These are the versions we currently run (or plan to run) in the [Maldorne](https://maldorne.org) MUD cluster:
+
+| Version       | Used by                                                              | Notes                                                                                                         |
+| ------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `v21.7b21_fr` | [iluminado](https://maldorne.org/games/#iluminado-mud)               | In production.                                                                                                |
+| `v22.2b13`    | [Ciudad Capital](https://maldorne.org/games/#ciudad-capital-v1)      | In production.                                                                                                |
+| `v21.7`       | —                                                                    | Compiled and published, but not used by any of our MUDs. Should work; feedback from other games very welcome. |
+| `v22.2b14`    | —                                                                    | Compiled and published, but not used by any of our MUDs. Should work; feedback from other games very welcome. |
