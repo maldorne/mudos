@@ -9,6 +9,10 @@
 # this amd64 image via gcc-multilib + -m32 (see CFLAGS patch below).
 FROM --platform=linux/amd64 debian:bookworm-slim
 
+# OCI label that ghcr uses to auto-link the published package to its source
+# repository, so the package shows up in the repo's sidebar on github.com.
+LABEL org.opencontainers.image.source="https://github.com/maldorne/mudos"
+
 # install build deps. git+ssh are also added so the resulting image
 # can later be reused as a runner that clones the game code at startup.
 RUN dpkg --add-architecture i386 \
