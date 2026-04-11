@@ -44,6 +44,15 @@ The `master` branch is empty, try any other branch to see its contents.
 If you want to test the images in your local machine, you can use them directly 
 from the [Github Container Registry](https://github.com/maldorne/mudos/pkgs/container/mudos).
 
+## Usage at Maldorne
+
+These are the versions we currently run (or plan to run) in the [Maldorne](https://maldorne.org) MUD cluster:
+
+ - `v21.7b21_fr` — used in production by [iluminado](https://maldorne.org/games/#iluminado-mud).
+ - `v22.2b13` — used in production by [Ciudad Capital](https://maldorne.org/games/#ciudad-capital-v1).
+ - `v21.7` — compiled and published, but not used by any of our MUDs at the moment. It should work, but it has not been battle-tested in production, so any feedback from people running games on top of it is very welcome.
+ - `v22.2b14` — same as above: compiled and published, not used by our MUDs right now. Should work, feedback welcome.
+
 ### Some notes
 
 - Versions of MudOS advanced up to `0.8` updating its minor version (using something like semantic versioning).
