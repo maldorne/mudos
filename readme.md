@@ -42,6 +42,12 @@ The `master` branch is empty, try any other branch to see its contents.
 If you want to test the images in your local machine, you can use them directly 
 from the [Github Container Registry](https://github.com/maldorne/mudos/pkgs/container/mudos).
 
+### Modern build on Debian 12
+
+Every branch now compiles on **Debian 12 Bookworm** with `gcc 12`, replacing the old Debian Sarge (2005) + `gcc 3.3.5` pipeline. The driver itself is still built as a 32-bit i386 ELF binary — `int` and `void *` need to be the same width for the K&R C code in MudOS to behave correctly — but the surrounding container userland is now fully modern: current `glibc`, current `git`/`openssh`, security updates, and any host architecture that can run Docker.
+
+To make `gcc 12` accept the legacy source without patching it, the `Dockerfile` injects a set of compatibility flags into `build.MudOS` via `sed`: `-m32` (i386), `-fgnu89-inline` (pre-C99 inline semantics), `-fcommon` (pre-`gcc 10` tentative definitions), and several `-Wno-*` / `-Wno-error=*` flags to tolerate K&R-style prototypes, implicit int and mismatched conversions. The full story — including the 64-bit pointer-truncation segfault that drove the decision to go back to i386 — is in the blog post [Modernizing the MudOS Driver: From Sarge to Bookworm](https://maldorne.org/2026/04/09/modernizing-the-mudos-driver/).
+
 ## Some notes about version history
 
 - Versions of MudOS advanced up to `0.8` updating its minor version (using something like semantic versioning).
