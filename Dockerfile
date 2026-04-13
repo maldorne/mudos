@@ -1,5 +1,5 @@
 # #### #### #### #### #### #### #### #### #### #### #### #### ####
-#  build MudOS v22.2b14 on modern Debian 12 (bookworm) with gcc 12,
+#  build MudOS v22.2-maldorne (based on v22.2b14) on Debian 12 (bookworm) with gcc 12,
 #  using compat flags for old K&R / pre-ANSI C code
 # #### #### #### #### #### #### #### #### #### #### #### #### ####
 

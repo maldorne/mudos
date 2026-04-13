@@ -1,4 +1,3 @@
-#include "std.h"
 #ifndef HAS_UALARM
 /*
  * Copyright (c) 1985 Regents of the University of California.
@@ -36,6 +35,8 @@
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)ualarm.c	5.5 (Berkeley) 2/23/91";
 #endif				/* LIBC_SCCS and not lint */
+
+#include "std.h"
 
 #define	USPS	1000000		/* # of microseconds in a second */
 

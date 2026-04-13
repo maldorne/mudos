@@ -18,7 +18,9 @@ the USENET groups rec.games.mud.{admin,announce,misc,lp,tiny,diku}.
 
 ## Branches
 
-This branch of the project contains the version `v22.2b14`, ready to use.
+This branch contains `v22.2-maldorne`, a Maldorne fork based on `v22.2b14` with the following fix:
+
+- **`ualarm.c` heartbeat fix**: reverted the `#include "std.h"` move that broke the heartbeat timer on modern Linux (see the `master` branch readme for details).
 
 The `master` branch is empty, try any other branch to see different versions.
 
@@ -26,11 +28,11 @@ The `master` branch is empty, try any other branch to see different versions.
 
 - Build the container image (from project base directory)
 
-  `docker build --no-cache -t neverbot/maldorne-mudos:v22.2b14 -f Dockerfile .`
+  `docker build --no-cache -t neverbot/maldorne-mudos:v22.2-maldorne -f Dockerfile .`
 
 - Run the container and take a look inside using a terminal
 
-  `docker run --rm -ti neverbot/maldorne-mudos:v22.2b14 /bin/bash`
+  `docker run --rm -ti neverbot/maldorne-mudos:v22.2-maldorne /bin/bash`
 
   Inside the container, in `/opt/mud`, you can find the directories `driver` 
   (with the source code of MudOS) and `bin`, with the two binaries needed
@@ -38,4 +40,4 @@ The `master` branch is empty, try any other branch to see different versions.
 
 - Publish the container in Docker Hub
 
-  `docker push neverbot/maldorne-mudos:v22.2b14`
+  `docker push neverbot/maldorne-mudos:v22.2-maldorne`
