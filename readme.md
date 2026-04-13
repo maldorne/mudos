@@ -54,7 +54,7 @@ To make `gcc 12` accept the legacy source without patching it, the `Dockerfile` 
 
 A second patch is applied to the generated `system_libs` file (produced by `./edit_source -configure`) to strip `-ly` (the legacy yacc runtime library, not needed — MudOS provides its own `yyerror`/`main`) and `-lnsl` (the legacy network-services library, whose functions are now part of glibc proper). Both of these libraries used to exist on Sarge but are no longer shipped for i386 on modern Debian, so the final link step fails without this patch.
 
-The full story — including the 64-bit pointer-truncation segfault that drove the decision to go back to i386 — is in the blog post [Modernizing the MudOS Driver: From Sarge to Bookworm](https://maldorne.org/2026/04/09/modernizing-the-mudos-driver/).
+The full story — including the 64-bit pointer-truncation segfault that drove the decision to go back to i386 — is in the blog post [Compiling MudOS on Modern Linux: From Debian Sarge to Bookworm](https://maldorne.org/2026/04/09/compiling-mudos-on-modern-linux/).
 
 ## Some notes about version history
 
@@ -101,3 +101,4 @@ Our `-maldorne` branches (e.g. `v22.2-maldorne`) are **not** new versions of Mud
 | Change     | File              | Description                                                                                                                                                                                   |
 | ---------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ualarm fix | `driver/ualarm.c` | Reverted the `#include "std.h"` move that broke the internal timer on modern Linux, causing `uptime()` to be permanently 0. See the [note above](#about-the-last-available-version-of-mudos). |
+| PROXY protocol v1 | `driver/comm.c`, `driver/local_options` | Reads a [PROXY protocol v1](https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt) header on new connections and uses the real client IP. Enabled via `#define SUPPORT_PROXY_PROTOCOL` in `local_options`. Backwards compatible. |
