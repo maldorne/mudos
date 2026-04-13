@@ -21,23 +21,25 @@ the USENET groups rec.games.mud.{admin,announce,misc,lp,tiny,diku}.
 
 ## Branches
 
-On this repository, you could find different branches for the following versions of MudOS (from newer to older):
+On this repository, you could find different branches for the following versions of MudOS (from older to newer):
 
- - `v22.2b14`
- - `v22.2b13`
- - `v21.7`
  - `v21.7b21_fr`
+ - `v21.7`
+ - `v22.2b13`
+ - `v22.2b14`
+ - `v22.2-maldorne` (Maldorne fork, based on `v22.2b14` with fixes)
 
 The `master` branch is empty, try any other branch to see its contents.
 
 ### Current status of each branch
 
-| Branch        | Notes                 | Status              |
-| ------------- | --------------------- | ------------------- |
-| `v22.2b14`    | Last version of MudOS | Working with Docker |
-| `v22.2b13`    |                       | Working with Docker |
-| `v21.7`       |                       | Working with Docker |
-| `v21.7b21_fr` |                       | Working with Docker |
+| Branch           | Notes                                   | Status              |
+| ---------------- | --------------------------------------- | ------------------- |
+| `v21.7b21_fr`    |                                         | Working with Docker |
+| `v21.7`          |                                         | Working with Docker |
+| `v22.2b13`       |                                         | Working with Docker |
+| `v22.2b14`       | Last version of MudOS                   | See note below*     |
+| `v22.2-maldorne` | Fork of b14 with minor fixes and addons | Working with Docker |
 
 If you want to test the images in your local machine, you can use them directly 
 from the [Github Container Registry](https://github.com/maldorne/mudos/pkgs/container/mudos).
@@ -46,7 +48,7 @@ from the [Github Container Registry](https://github.com/maldorne/mudos/pkgs/cont
 
 Every branch now compiles on **Debian 12 Bookworm** with `gcc 12`, replacing the old Debian Sarge (2005) + `gcc 3.3.5` pipeline. The driver itself is still built as a 32-bit i386 ELF binary — `int` and `void *` need to be the same width for the K&R C code in MudOS to behave correctly — but the surrounding container userland is now fully modern: current `glibc`, current `git`/`openssh`, security updates, and any host architecture that can run Docker.
 
-All four version branches (`v21.7b21_fr`, `v21.7`, `v22.2b13`, `v22.2b14`) share the **exact same `Dockerfile` recipe**, differing only in the version string printed in the header comment. Porting any future patch or fix across branches is a simple copy-paste.
+All version branches share the **exact same `Dockerfile` recipe**, differing only in the version string printed in the header comment. Porting any future patch or fix across branches is a simple copy-paste.
 
 To make `gcc 12` accept the legacy source without patching it, the `Dockerfile` injects a set of compatibility flags into `build.MudOS` via `sed`: `-m32` (i386), `-fgnu89-inline` (pre-C99 inline semantics), `-fcommon` (pre-`gcc 10` tentative definitions), and several `-Wno-*` / `-Wno-error=*` flags to tolerate K&R-style prototypes, implicit int and mismatched conversions.
 
@@ -68,9 +70,34 @@ The full story — including the 64-bit pointer-truncation segfault that drove t
 
 These are the versions we currently run (or plan to run) in the [Maldorne](https://maldorne.org) MUD cluster:
 
-| Version       | Used by                                                                                                                                                                   | Notes                                                                                                         |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `v21.7b21_fr` | [Iluminado](https://maldorne.org/games/#iluminado-mud), [Ancient Kingdoms](https://maldorne.org/games/#ancient-kingdoms), [Reinos de Leyenda](https://maldorne.org/games/#reinos-de-leyenda) | In production.                                                                                                |
-| `v22.2b13`    | [Ciudad Capital](https://maldorne.org/games/#ciudad-capital-v1)                                                                                                               | In production.                                                                                                |
-| `v21.7`       | —                                                                                                                                                                             | Compiled and published, but not used by any of our MUDs. Should work; feedback from other games very welcome. |
-| `v22.2b14`    | —                                                                                                                                                                             | Compiled and published, but not used by any of our MUDs. Should work; feedback from other games very welcome. |
+| Version          | Used by                                                                                                                                                                                      | Notes                                                                                       |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `v21.7b21_fr`    | [Iluminado](https://maldorne.org/games/#iluminado-mud), [Ancient Kingdoms](https://maldorne.org/games/#ancient-kingdoms), [Reinos de Leyenda](https://maldorne.org/games/#reinos-de-leyenda) | In production.                                                                              |
+| `v21.7`          | —                                                                                                                                                                                            | Compiled and published, not used by any of our MUDs. Should work; feedback welcome.         |
+| `v22.2b13`       | —                                                                                                                                                                                            | Used in production with Ciudad Capital before switching to v22.2-maldorne. Works correctly. |
+| `v22.2b14`       | —                                                                                                                                                                                            | Compiled and published, not used by any of our MUDs. See note below*.                       |
+| `v22.2-maldorne` | [Ciudad Capital](https://maldorne.org/games/#ciudad-capital-v1)                                                                                                                              | In production. Fork of b14 with minor fixes and addons.                                     |
+
+## About the last available version of MudOS
+
+\*`v22.2b14` compiles and starts, but the heartbeat timer never fires on modern Linux (Debian 12), so `uptime()` is permanently 0. We confirmed this both under emulation (arm64 host) and natively on x86_64.
+
+The cause is a one-line change in `driver/ualarm.c`: the `#include "std.h"` was moved from line 39 (inside the `#ifndef HAS_UALARM` block) to line 1 (before the guard). On modern glibc, `std.h` defines `HAS_UALARM`, so the entire fallback `ualarm()` implementation is skipped. MudOS then uses the system's `ualarm()`, which does not work correctly with the driver's signal-based heartbeat loop.
+
+The fix is to move `#include "std.h"` back inside the `#ifndef` block (i.e. revert that specific change from b14). We verified that b14 with this single revert works correctly with a production mudlib. This fix is applied in the `v22.2-maldorne` branch.
+
+## About our fork branches
+
+The name "MudOS" is copyrighted by Erik Kay, Adam Beeman, Stephan Iannce and John Garnett (1991-1992). The entire package is additionally copyrighted by Tim Hollebeek (1995). The license permits modification and redistribution for non-commercial use. See the `driver/Copyright` file in any version branch for the full text.
+
+Historically, some time after the MudOS project became unmaintained, there was [community discussion](https://groups.google.com/g/rec.games.mud.lp/c/Jwg7B335N3A) about forking and naming rights. The main community fork is [FluffOS](https://github.com/fluffos/fluffos), originally created by the Discworld MUD team to maintain their own driver patches independently.
+
+Our `-maldorne` branches (e.g. `v22.2-maldorne`) are **not** new versions of MudOS. We do not claim any rights over the MudOS name, trademark, or project. These branches are minimal forks of specific MudOS versions with only the fixes strictly necessary to run pre-existing mudlibs on modern Linux (Debian 12), solely for preservation purposes. They exist because the original source code has not been maintained since 2003 and does not compile or run correctly on current systems without small patches. We publish the resulting Docker images solely for our own non-commercial use and for the benefit of the MUD community.
+
+### Changes included in each fork branch
+
+#### `v22.2-maldorne` (based on `v22.2b14`)
+
+| Change     | File              | Description                                                                                                                                                                                   |
+| ---------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ualarm fix | `driver/ualarm.c` | Reverted the `#include "std.h"` move that broke the internal timer on modern Linux, causing `uptime()` to be permanently 0. See the [note above](#about-the-last-available-version-of-mudos). |
