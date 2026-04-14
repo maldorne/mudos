@@ -823,4 +823,12 @@
  */
 #undef NEXT_MALLOC_DEBUG
 
+/* SUPPORT_PROXY_PROTOCOL: define this to enable PROXY protocol v1 support.
+ * When enabled, the driver checks the first bytes of each new connection
+ * for a PROXY protocol v1 header (e.g. from HAProxy or Traefik) and uses
+ * the real client IP from the header instead of the proxy's IP.
+ * Connections without a PROXY header work normally (auto-detection).
+ */
+#define SUPPORT_PROXY_PROTOCOL
+
 #endif
