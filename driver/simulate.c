@@ -15,7 +15,7 @@
 #include "eoperators.h"
 #include "ed.h"
 #include "file.h"
-#include "packages/parser.h"
+/*#include "packages/parser.h"*/
 
 /*
  * 'inherit_file' is used as a flag. If it is set to a string
@@ -1745,8 +1745,468 @@ void free_sentence P1(sentence_t *, p)
  */
 
 #define MAX_VERB_BUFF 100
+#ifdef DISCWORLD_ADD_ACTION
+/*
+ * Find the sentence for a command from the player.
+ * Return success status.
+ */
+int user_parser(buff)
+    char *buff;
+{
+    sentence_t *s;
+    char *p;
+    int length;
+    object_t *save_current_object = current_object,
+                  *save_command_giver = command_giver;
+    char verb_copy[SMALL_STRING_SIZE];
+    char *special_parse(char *);
+    
 
-#ifndef NO_ADD_ACTION
+#ifdef DEBUG
+    if (d_flag > 1)
+	debug_message("cmd [%s]: %s\n", command_giver->name, buff);
+#endif
+    /* strip trailing spaces. */
+    for (p = buff + strlen(buff) - 1; p >= buff; p--) {
+	if (*p != ' ')
+	    break;
+	*p = '\0';
+    }
+    if (buff[0] == '\0')
+	return 0;
+    /* strip leading spaces */
+    if (*buff == ' ') {
+        register i;
+
+        for (p = buff+1; *p == ' '; p++) ;
+        length = strlen(buff) + p - buff;
+        for (i=0; i <= length; i++) buff[i] = p[i];
+    }
+    p = special_parse(buff);
+    if (p) {
+      buff = p;
+    }
+    p = strchr(buff, ' ');
+    if (p == 0)
+	length = strlen(buff);
+    else
+	length = (int)(p - buff);
+    for (s=command_giver->sent; s; s = s->next) {
+	svalue_t *ret;
+	int len;
+	object_t *command_object;
+	
+	if (s->verb == 0)
+	    error("An 'action' did something, but returned 0 or \
+had an undefined verb.\n");
+	len = strlen(s->verb);
+        if (s->star != -1) { /* had a star in the verb */
+          if (s->star == len) { /* star at end ie: no_space */
+            if (strncmp(s->verb, buff, len) != 0) continue;
+          } else { /* all up to space must match */
+            if ((length > len) || (length < s->star)) continue;
+            if (strncmp(buff, s->verb, length) != 0) continue;
+          }
+        } else {
+          if (len != length) continue;
+          if (strncmp(s->verb, buff, length)) continue;
+        }
+	/*
+	 * Now we have found a special sentence !
+	 */
+#ifdef DEBUG 
+	if (d_flag > 1)
+	    debug_message("Local command %s on %s\n",
+                           s->function, s->ob->name);
+#endif
+	if (len >= sizeof verb_copy) {
+          strncpy(verb_copy, s->verb, sizeof verb_copy - 1);
+          verb_copy[sizeof verb_copy] = '\0';
+        } else
+ 	  strcpy(verb_copy, s->verb); /* the verb that was matched */
+	last_verb = verb_copy;
+	/*
+	 * If the function is static and not defined by current object,
+	 * then it will fail. If this is called directly from player input,
+	 * then we set current_object so that static functions are allowed.
+	 * current_object is reset just after the call to apply().
+	 */
+	if (current_object == 0)
+	    current_object = s->ob;
+	/*
+	 * Remember the object, to update score.
+	 */
+	command_object = s->ob;
+	if (s->star == len) { /* star at end */
+	    push_constant_string(&buff[strlen(s->verb)]);
+	    ret = apply(s->function.s,s->ob, 1, ORIGIN_DRIVER);
+	} else if (buff[length] == ' ') {
+	    push_constant_string(&buff[length+1]);
+	    ret = apply(s->function.s, s->ob, 1, ORIGIN_DRIVER);
+	} else {
+	    ret = apply(s->function.s, s->ob, 0, ORIGIN_DRIVER);
+	}
+	if (current_object->flags & O_DESTRUCTED) {
+	    /* If disable_commands() were called, then there is no
+	     * command_giver any longer.
+	     */
+	    if (command_giver == 0)
+		return 1;
+	    s = command_giver->sent;	/* Restart :-( */
+	}
+	current_object = save_current_object;
+	last_verb = 0;
+	/* If we get fail from the call, it was wrong second argument. */
+        if (ret && ret->type == T_NUMBER && ret->u.number == 0)
+          continue;
+        if (!command_giver) {
+          /*//if (ret) free_svalue(ret, "user_parser"); */
+          return 1;
+        }
+        if (ret == 0)
+          add_vmessage(command_giver, "Error: action %s not found.\n", s->function.s);
+        /*//if (ret) free_svalue(ret, "user_parser"); */
+	return 1;
+    }
+    notify_no_command();
+    return 0;
+}
+
+/*
+ * Associate a command with function in this object.
+ *
+ * The first argument is the function to be called.
+ *
+ * The second argument is the verb to be matched.
+ *
+ * The optional third argument is the verbs priority.
+ *
+ * The object must be near the command giver, so that we ensure that the
+ * sentence is removed when the command giver leaves.
+ *
+ * If the call is from a shadow, make it look like it is really from
+ * the shadowed object.
+ */
+void add_action(arg, cmd, priority)
+    svalue_t *arg;
+    char  *cmd;
+    int priority;
+{
+    sentence_t *new;
+    sentence_t **prev;
+    object_t *ob;
+    char *pos, *str;
+
+    if (arg->type != T_STRING)
+        error("Illegal argh1 to add_action");
+    if (arg->type == T_STRING && arg->u.string[0] == ':')
+	error("Illegal function name: %s\n", arg->u.string);
+    if (current_object->flags & O_DESTRUCTED)
+	return;
+    ob = current_object;
+    while(ob->shadowing)
+	ob = ob->shadowing;
+    if (command_giver == 0 || (command_giver->flags & O_DESTRUCTED))
+	return;
+    if (ob != command_giver && ob->super != command_giver &&
+	ob->super != command_giver->super && ob != command_giver->super)
+      error("add_action from object that was not present.\n");
+#ifdef DEBUG
+    if (d_flag > 1)
+	debug_message("--Add action %s\n", str);
+#endif
+#ifdef COMPAT_MODE
+    if (strcmp(str, "exit") == 0)
+	error("Illegal to define a command to the exit() function.\n");
+#endif
+    new = alloc_sentence();
+    new->function.s = make_shared_string(arg->u.string);
+    new->flags = 0;
+    if ((pos = strchr(cmd, '*'))) { /* assumes 1 star only */
+      char tmp[SMALL_STRING_SIZE];
+
+      strcpy(tmp, cmd);
+      pos = strchr(tmp, '*');
+      new->star = pos - tmp;
+      strcpy(pos, pos+1); /* eat star -- this portable?? */
+      new->verb = make_shared_string(tmp);
+    } else {
+      new->star = -1;
+      new->verb = make_shared_string(cmd);
+    }
+    new->ob = ob;
+    new->priority = priority;
+    if (!command_giver->sent) {
+      command_giver->sent = new;
+      new->next = 0;
+      return;
+    }
+    prev = &(command_giver->sent);
+    while ((*prev) && (*prev)->priority > priority) prev = &((*prev)->next);
+    new->next = *prev;
+    *prev = new;
+}
+
+#ifdef OLD_THINGY
+/*
+ * Remove all commands (sentences) defined by object 'ob' in object
+ * 'player'
+ */
+void remove_sent(ob, player)
+    object_t *ob, *player;
+{
+    sentence_t **s;
+
+    for (s= &player->sent; *s;) {
+	sentence_t *tmp;
+	if ((*s)->ob == ob) {
+#ifdef DEBUG
+	    if (d_flag > 1)
+		debug_message("--Unlinking sentence %s\n", (*s)->function.s);
+#endif
+	    tmp = *s;
+	    *s = tmp->next;
+	    free_sentence(tmp);
+	} else
+	    s = &((*s)->next);
+    }
+}
+#endif
+
+char debug_parse_buff[50]; /* Used for debugging */
+
+/*
+ * Hard coded commands, that will be available to all players. They can not
+ * be redefined, so the command name should be something obscure, not likely
+ * to be used in the game.
+ */
+char *special_parse(char *buff)
+{
+    if (strcmp(buff, "e") == 0) {
+        return "este";
+    }
+    if (strcmp(buff, "o") == 0) {
+        return "oeste";
+    }
+    if (strcmp(buff, "s") == 0) {
+        return "sur";
+    }
+    if (strcmp(buff, "n") == 0) {
+        return "norte";
+    }
+    if (strcmp(buff, "ab") == 0) {
+        return "abajo";
+    }
+    if (strcmp(buff, "ar") == 0) {
+        return "arriba";
+    }
+    if (strcmp(buff, "no") == 0) {
+        return "noroeste";
+    }
+    if (strcmp(buff, "ne") == 0) {
+        return "noreste";
+    }
+    if (strcmp(buff, "so") == 0) {
+        return "sudoeste";
+    }
+    if (strcmp(buff, "se") == 0) {
+        return "sudeste";
+    }
+    if (strcmp(buff, "de") == 0) {
+        return "dentro";
+    }
+    if (strcmp(buff, "fu") == 0) {
+        return "fuera";
+    }
+    return NULL;
+}
+#endif
+
+#ifdef F_EVENT
+/*
+ * event call, calls "event_"+event_fun on all objects in event_ob,
+ * with the params event_param.
+ * if event_ob is an array, then calls "event_"+event_fun on all of the
+ * objects in the array.
+ */
+void event(event_ob, event_fun, numparam, event_param)
+  svalue_t *event_ob;
+  char *event_fun;
+  int numparam;
+  svalue_t *event_param;
+{
+  object_t *ob;
+  object_t *origin;
+  svalue_t *ret;
+  char *name;
+  int i;
+
+  origin = current_object;
+  name = (char *)XALLOC(strlen(event_fun)+7);
+  strcpy(name, "event_");
+  strcat(name, event_fun);
+  if (event_ob->type == T_ARRAY) {
+    int ind;
+
+    for (ind=0; ind<event_ob->u.arr->size; ind++) {
+      if (event_ob->u.arr->item[ind].type != T_OBJECT
+           || event_ob->u.arr->item[ind].u.ob->flags&O_DESTRUCTED)
+        continue;
+      push_object(origin);
+      for (i=0;i<numparam;i++)
+        push_svalue(event_param+i);
+      ret = apply(name, event_ob->u.arr->item[ind].u.ob, numparam+1, ORIGIN_DRIVER);
+/* */
+      /* //if (ret) free_svalue(ret, "event");*/
+    }
+  } else { /* (event_ob->type == T_OBJECT) */
+    /*
+     * first call on the original object.
+     */
+    push_object(origin);
+    for (i=0;i<numparam;i++)
+      push_svalue(event_param+i);
+    ret = apply(name, event_ob->u.ob, numparam+1, ORIGIN_DRIVER);
+      /*//if (ret) free_svalue(ret, "event");*/
+    /*
+     * call on all the objects in it.
+     */
+    for (ob = event_ob->u.ob->contains; ob; ob = ob->next_inv) {
+      if (ob == origin) continue;
+      if (ob->flags & O_DESTRUCTED) continue;
+      push_object(origin);
+      for (i=0;i<numparam;i++)
+        push_svalue(event_param+i);
+      ret = apply(name, ob, numparam+1, ORIGIN_DRIVER);
+      /*//if (ret) free_svalue(ret, "event"); */
+    }
+  }
+  FREE(name);
+} /* end of event() */
+#endif
+
+#if defined(DISCWORLD_ADD_ACTION) && defined(F_REMOVE_ACTION)
+/*
+ * removes an action from objects in the inventory and enviroment of
+ * current_object.  the "cmd" must be defined by the object.
+ */
+int remove_action(cmd, from)
+  char *cmd;
+  object_t *from;
+{
+  sentence_t **s, *t;
+  int n;
+
+  n = 0;
+  for (s=&(from->sent); *s; ) {
+    if ((*s)->ob == current_object) {
+      if (strcasecmp((*s)->verb, cmd)) {
+        s = &((*s)->next);
+        continue;
+      }
+      t = *s;
+      *s = (*s)->next;
+      free_sentence(t);
+      n++;
+    }
+  }
+  return n;
+} /* end of remove_action() */
+#endif /* F_REMOVE_ACTION */
+
+#ifdef F_ACTIONS_DEFINED
+/*
+ * Returns the actions defined by "by" on "on" in the format:
+ * (assuming all data possible is returned)
+ * ({
+ *   "command", ({
+ *     object_defining_action,
+ *     "function called",
+ *     short_verb,
+ *     priority
+ *   })
+ * })
+ * if "by" is NULL then returns all commands defined.
+ * "on"defaults to command_giver.
+ * "flags" has the following format:
+ *   0000 : no optional data, return array of command names.
+ *   1xxx : include the object defining the action.
+ *   x1xx : include the name of the function called.
+ *   xx1x : include position of star + 1 (0 if not exist).
+ *   xxx1 : include the actions priority.
+ */
+int do_test_args(arr, ob)
+array_t *arr;
+object_t *ob;
+{
+  int i;
+
+  for (i=0;i<arr->size;i++)
+    if (arr->item[i].type == T_OBJECT && arr->item[i].u.ob == ob)
+      return 1;
+} /* do_test_args() */
+
+array_t *actions_defined(by, on, flags)
+  svalue_t *by;
+  object_t *on;
+  int flags;
+{
+  /* number of bits in:  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 */
+  static char bits[] = { 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
+  sentence_t *s;
+  array_t *ret;
+  int num, ind;
+
+  if (!on) on = command_giver;
+  num = 0;
+  for (s = on->sent; s; s = s->next)
+    if (!by || (by->type == T_OBJECT && s->ob == by->u.ob)
+            || (by->type == T_ARRAY && do_test_args(s->ob, by->u.arr)))
+      num++;
+  if (!num) return allocate_array(0);
+  if (flags) num *= 2;
+  ret = allocate_array(num);
+  num = 0;
+  for (s = on->sent; s; s = s->next)
+    if (!by || (by->type == T_OBJECT && s->ob == by->u.ob)
+            || (by->type == T_ARRAY && do_test_args(s->ob, by->u.arr))) {
+      ret->item[num].type = T_STRING;
+      ret->item[num].subtype = STRING_SHARED;
+      ret->item[num].u.string = make_shared_string(s->verb);
+      num++;
+      if (!flags) continue;
+      /* wonder if this would be better as a series of for loops */
+      ret->item[num].type = T_ARRAY;
+      ret->item[num].u.arr = allocate_array((int)bits[flags]);
+      ind = 0;
+      if (flags & 0x8) { /* then include object defining */
+        ret->item[num].u.arr->item[0].type = T_OBJECT;
+        ret->item[num].u.arr->item[0].u.ob = s->ob;
+        add_ref(s->ob, "actions_defined");
+        ind++;
+      }
+      if (flags & 0x4) { /* then include function name */
+        ret->item[num].u.arr->item[ind].type = T_STRING;
+        ret->item[num].u.arr->item[ind].subtype = STRING_SHARED;
+        ret->item[num].u.arr->item[ind].u.string = make_shared_string(s->function.s);
+        ind++;
+      }
+      if (flags & 0x2) { /* then include star */
+        ret->item[num].u.arr->item[ind].type = T_NUMBER;
+        ret->item[num].u.arr->item[ind].u.number = s->star + 1;
+        ind ++;
+      }
+      if (flags & 0x1) { /* then include priority */
+        ret->item[num].u.arr->item[ind].type = T_NUMBER;
+        ret->item[num].u.arr->item[ind].u.number = s->priority;
+      }
+      num++;
+    }
+  return ret;
+} /* end of actions_defined() */
+#endif /* F_ACTIONS_DEFINED */
+
+#if !defined(NO_ADD_ACTION) && !defined(DISCWORLD_ADD_ACTION)
 int user_parser P1(char *, buff)
 {
     char verb_buff[MAX_VERB_BUFF];
@@ -1819,7 +2279,7 @@ int user_parser P1(char *, buff)
 #ifdef DEBUG
 	if (d_flag > 1)
 	    debug_message("Local command %s on %s\n",
-			  s->function, s->ob->name);
+			  s->function.s, s->ob->name);
 #endif
 	if (s->flags & V_NOSPACE) {
 	    int l1 = strlen(s->verb);
@@ -2001,7 +2461,9 @@ int remove_action P2(char *, act, char *, verb)
     }
     return 0;
 }
+#endif /* NO_ADD_ACTION */
 
+#ifndef NO_ADD_ACTION
 /*
  * Remove all commands (sentences) defined by object 'ob' in object
  * 'user'
@@ -2026,7 +2488,7 @@ static void remove_sent P2(object_t *, ob, object_t *, user)
 	    s = &((*s)->next);
     }
 }
-#endif /* NO_ADD_ACTION */
+#endif
 
 void fatal P1V(char *, fmt)
 {

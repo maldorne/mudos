@@ -126,7 +126,7 @@
  *   from stripping off more than one leading delimeters.  #undef it for the
  *   old behavior.
  */
-#define SANE_EXPLODE_STRING
+#undef SANE_EXPLODE_STRING
 
 /* CAST_CALL_OTHERS: define this if you want to require casting of call_other's;
  *   this was the default behavior of the driver prior to this addition.
@@ -142,11 +142,12 @@
 /* NO_LIGHT: define this to disable the set_light() and driver maintenance
  *   of light levels in objects.  You can simulate it via LPC if you want...
  */
-#define NO_LIGHT
+#undef NO_LIGHT
 
 /* NO_ADD_ACTION: define this to remove add_action, commands, livings, etc.
    process_input() then becomes the only way to deal with player input. */
 #undef NO_ADD_ACTION
+#define DISCWORLD_ADD_ACTION 
 
 /* NO_ENVIRONMENT: define this to remove the handling of object containment
    relationships by the driver */
@@ -155,7 +156,7 @@
 /* NO_WIZARDS: for historical reasons, MudOS used to keep track of who
    is and isn't a wizard.  Defining this removes that completely.
    If this is defined, the wizardp() and related efuns don't exist */
-#define NO_WIZARDS
+#undef NO_WIZARDS
 
 /* OLD_TYPE_BEHAVIOR: reintroduces a bug in type-checking that effectively
  * renders compile time type checking useless.  For backwards compatibility.
@@ -197,7 +198,7 @@
  * On by default, because newer libs use catch() alot, and it's confusing
  * if the errors don't show up in the logs.
  */
-#define LOG_CATCHES
+#undef LOG_CATCHES
 
 /* ARGUMENTS_IN_TRACEBACK: prints out function call arguments in error
  *   tracebacks, to aid in debugging.  Note: it prints the values of
@@ -235,7 +236,7 @@
  * errors.  Unfortunately, you need to have one.  Check the testsuite or
  * other libs for an example.
  */
-#define MUDLIB_ERROR_HANDLER
+#undef MUDLIB_ERROR_HANDLER
 
 /* OPTIMIZE_FUNCTION_TABLE_SEARCH: define this if you want the function
  *   table to be sorted for faster lookups (ie binary search).  The flipside
@@ -248,7 +249,7 @@
  *   always specify a full path to the config file when starting the driver.
  */
 #ifndef LATTICE
-#define CONFIG_FILE_DIR "/u/tim/COMP/bin"
+#define CONFIG_FILE_DIR "/local2/imudadm/bin"
 #else
 #define CONFIG_FILE_DIR "etc:"
 #endif
@@ -281,7 +282,7 @@
  * PRAGMA_ERROR_CONTEXT:include some text telling where on the line a
  *                      compilation error occured.
  */
-#define DEFAULT_PRAGMAS PRAGMA_WARNINGS + PRAGMA_STRICT_TYPES
+#define DEFAULT_PRAGMAS PRAGMA_WARNINGS 
 
 /* LAZY_RESETS: if this is defined, an object will only have reset()
  *   called in it when it is touched via call_other() or move_object()
@@ -383,7 +384,7 @@
  *   sent directly via add_message()).  This is useful if you want to
  *   build a smart client that does something different with snoop messages.
  */
-#define RECEIVE_SNOOP
+#undef RECEIVE_SNOOP
 
 /* PROFILE_FUNCTIONS: define this to be able to measure the CPU time used by
  *   all of the user-defined functions in each LPC object.  Note: defining
@@ -417,7 +418,7 @@
  *   saved.  Allowing any file by any wizard to be saved as a
  *   binary is convenient, but may take up a lot of disk space.
  */
-#define BINARIES
+#undef BINARIES
 
 /* ARRAY_RESERVED_WORD: If this is defined then the word 'array' can
  *   be used to define arrays, as in:
@@ -459,7 +460,7 @@
  *   maintenance by the driver.  These mudlib stats are more domain
  *   based than user based, and replaces the traditional wiz_list stats.
  */
-#undef PACKAGE_MUDLIB_STATS
+#define PACKAGE_MUDLIB_STATS
 
 /* PACKAGE_SOCKETS: define this to enable the socket efunctions.  This
  *   causes HAS_SOCKETS to be defined for all LPC objects.
@@ -488,7 +489,7 @@
  * PACKAGE_UIDS: define this if you want a driver that does use uids.
  *
  */
-#undef PACKAGE_UIDS
+#define PACKAGE_UIDS
 
 /* AUTO_SETEUID: when an object is created it's euid is automatically set to
  *   the equivalent of seteuid(getuid(this_object())).  undef AUTO_SETEUID
@@ -552,7 +553,7 @@
  * [NOTE: BINARIES must also be defined for LPC->C to work.  Actually
  *  using binaries is not required, though.]
  */
-#define LPC_TO_C
+#undef LPC_TO_C
 
 /* RUNTIME_LOADING: On systems which support it, it allows LPC->C compilation
  * 'on the fly' without having to recompile the driver.
@@ -627,6 +628,6 @@
  * [NOTE: malloc_debug(6) is a good compromise between efficiency and
  *  completeness of malloc debugging (malloc/free will be about half as fast).]
  */
-#define NEXT_MALLOC_DEBUG
+#undef NEXT_MALLOC_DEBUG
 
 #endif

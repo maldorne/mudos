@@ -147,6 +147,7 @@
 /* NO_ADD_ACTION: define this to remove add_action, commands, livings, etc.
    process_input() then becomes the only way to deal with player input. */
 #undef NO_ADD_ACTION
+#define DISCWORLD_ADD_ACTION
 
 /* NO_ENVIRONMENT: define this to remove the handling of object containment
    relationships by the driver */

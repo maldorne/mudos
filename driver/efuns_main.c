@@ -62,12 +62,12 @@ f_add_action PROT((void))
 
 	for (i = 0; i < n; i++){
 	    if (sv[i].type == T_STRING){
-		add_action(sp-1, sv[i].u.string, flag & 3);
+		add_action(sp-1, sv[i].u.string, flag);
 	    }
 	}
 	free_array((sp--)->u.arr);
     } else {
-	add_action((sp-1), sp->u.string, flag & 3);
+	add_action((sp-1), sp->u.string, flag);
 	free_string_svalue(sp--);
     }
     pop_stack();
@@ -1480,9 +1480,14 @@ void
 f_member_array PROT((void))
 {
     array_t *v;
-    int i;
+    int i, flag = 0;
 
     if (st_num_arg > 2) {
+	if (st_num_arg > 3) {
+            CHECK_TYPES(sp, T_NUMBER, 4, F_MEMBER_ARRAY);
+            flag = (sp--)->u.number;
+	}
+        CHECK_TYPES(sp, T_NUMBER, 3, F_MEMBER_ARRAY);
         i = (sp--)->u.number;
         if (i<0) bad_arg(3, F_MEMBER_ARRAY);
     } else i = 0;
@@ -1508,16 +1513,23 @@ f_member_array PROT((void))
 	    /* *not* COUNTED_STRLEN() which can do a (costly) strlen() call */
 	    if (find->subtype & STRING_COUNTED)
 		flen = MSTR_SIZE(find->u.string);
-	    else flen = 0;
+	    else if (flag) flen = strlen(find->u.string); else flen = 0;
 	}
 
         for (; i < size; i++) {
             switch (find->type|(sv= v->item + i)->type) {
             case T_STRING:
-		if (flen && (sv->subtype & STRING_COUNTED)
-		    && flen != MSTR_SIZE(sv->u.string))
-		    continue;
-                if (strcmp(find->u.string, sv->u.string)) continue;
+		if (flag) {
+		    if (flen && (sv->subtype & STRING_COUNTED) 
+		          && flen > MSTR_SIZE(sv->u.string))
+			continue;
+		    if (strncmp(find->u.string, sv->u.string, flen)) continue;
+		} else {
+		    if (flen && (sv->subtype & STRING_COUNTED)
+		        && flen != MSTR_SIZE(sv->u.string))
+		        continue;
+                    if (strcmp(find->u.string, sv->u.string)) continue;
+		}
 		break;
             case T_NUMBER:
                 if (find->u.number == sv->u.number) break;
@@ -2466,8 +2478,6 @@ f_replace_string PROT((void))
                         src += plen;
                         if (cur == last) break;
                     } else {
-			memcpy(dst2, src, plen);
-			dst2 += plen;
                         src += plen;
                     }
                 } else {
@@ -2495,27 +2505,14 @@ f_replace_string PROT((void))
 	    } else { /* rlen is zero */
 		while (*src) {
 		    if (*src++ == *pattern) {
-			cur++;
-			if (cur >= first) {
-			    dst2 = src - 1;
-			    while (*src) {
-				if (*src == *pattern) {
-				    cur++;
-				    if (cur <= last) {
-					src++;
-					continue;
-				    } else {
-					while (*src)
-					    *dst2++ = *src++;
-					break;
-				    }
-				}
-				*dst2++ = *src++;
-			    }
-			    *dst2 = 0;
-			    arg->u.string = extend_string(dst1, dst2 - dst1);
-			    break;
+			dst2 = src - 1;
+			while (*src) {
+			    if (*src == *pattern) src++;
+			    else *dst2++ = *src++;
 			}
+			*dst2 = 0;
+			arg->u.string = extend_string(dst1, dst2 - dst1);
+			break;
 		    }
 		}
 	    }
@@ -2533,16 +2530,18 @@ f_replace_string PROT((void))
                 } else if (memcmp(src, pattern, plen) == 0) {
                     cur++;
                     if ((cur >= first) && (cur <= last)) {
-			if (max_string_length - dlen <= rlen) {
-			    pop_n_elems(st_num_arg);
-			    push_svalue(&const0u);
-			    FREE_MSTR(dst1);
-			    return;
-			}
-			memcpy(dst2, replace, rlen);
-			dst2 += rlen;
-			dlen += rlen;
-			src += plen;
+                        if (rlen) {
+                            if (max_string_length - dlen <= rlen) {
+                                pop_n_elems(st_num_arg);
+                                push_svalue(&const0u);
+                                FREE_MSTR(dst1);
+                                return;
+                            }
+                            memcpy(dst2, replace, rlen);
+                            dst2 += rlen;
+                            dlen += rlen;
+                        }
+                        src += plen;
                         if (cur == last) break;
                     } else {
 			dlen += plen;
@@ -3810,5 +3809,53 @@ f_next_inventory PROT((void))
         ob = ob->next_inv;
     }
     *sp = const0;
+}
+#endif
+
+#ifdef F_EVENT
+void
+f_event PROT((void))
+{
+    int num_arg = st_num_arg;
+
+    event(sp-num_arg+1, (sp-num_arg+2)->u.string, num_arg-2, sp-num_arg+3);
+    pop_n_elems(num_arg);
+}
+#endif
+
+#ifdef F_ACTIONS_DEFINED
+void
+f_actions_defined PROT((void))
+{
+#ifdef DISCWORLD_ADD_ACTION
+  array_t *v;
+  svalue_t *arg1;
+  object_t *arg2;
+  int arg3;
+
+  if (st_num_arg && ((sp-st_num_arg+1)->type == T_OBJECT)
+               || ((sp-st_num_arg+1)->type == T_ARRAY))
+    arg1 = (sp-st_num_arg+1);
+  else
+    arg1 = 0;
+  if ((st_num_arg > 1) && ((sp-st_num_arg)->type == T_OBJECT))
+    arg2 = (sp-st_num_arg)->u.ob;
+  else
+    arg2 = 0;
+  if (st_num_arg > 2) /* only first two arg types caught by parser */
+    if (sp->type != T_NUMBER)
+      bad_argument(sp, T_NUMBER, 3, F_ACTIONS_DEFINED);
+    else
+      arg3 = sp->u.number;
+  else
+    arg3 = 0; /* defaults to no optional data */
+  v = actions_defined(arg1, arg2, arg3);
+  pop_n_elems(st_num_arg);
+  push_array(v);
+  v->ref--; /* fix ref count */
+#else
+  pop_n_elems(st_num_arg);
+	*++sp = const0;
+#endif
 }
 #endif

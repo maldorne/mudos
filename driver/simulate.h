@@ -37,7 +37,11 @@ int user_parser PROT((char *));
 int command_for_object PROT((char *));
 void enable_commands PROT((int));
 void add_action PROT((svalue_t *, char *, int));
+#ifdef DISCWORLD_ADD_ACTION
+int remove_action PROT((char *, object_t *));
+#else
 int remove_action PROT((char *, char *));
+#endif
 #endif
 #ifndef NO_LIGHT
 void add_light PROT((object_t *, int));

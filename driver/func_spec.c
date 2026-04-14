@@ -39,7 +39,7 @@ string capitalize(string);
 string *explode(string, string);
 mixed implode(mixed *, string | function, void | mixed);
 void call_out(string | function, int,...);
-int member_array(mixed, string | mixed *, void | int);
+int member_array(mixed, string | mixed *, void | int, void | int);
 int input_to(string | function,...);
 int random(int);
 
@@ -57,9 +57,15 @@ void move_object(object | string);
 
 #ifndef NO_ADD_ACTION
 void add_action(string | function, string | string *, void | int);
+#ifdef DISCWORLD_ADD_ACTION
+int remove_action(string, string);
+mixed *actions_defined(object *|object|void|int, object|void|int, int|void);
+#else
+int remove_action(string, string);
+#endif
+void event(object | object *, string, ...);
 string query_verb();
 int command(string);
-int remove_action(string, string);
 int living(object);
 mixed *commands();
 void disable_commands();

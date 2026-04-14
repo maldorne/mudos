@@ -62,6 +62,9 @@ typedef struct sentence_s {
     struct object_s *ob;
     union string_or_func function;
     int flags;
+#ifdef DISCWORLD_ADD_ACTION
+    int priority, star;
+#endif
 } sentence_t;
 
 typedef struct { /* has to be the same as object_t below */
