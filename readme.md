@@ -18,9 +18,10 @@ the USENET groups rec.games.mud.{admin,announce,misc,lp,tiny,diku}.
 
 ## Branches
 
-This branch contains `v22.2-maldorne`, a Maldorne fork based on `v22.2b14` with the following fix:
+This branch contains `v22.2-maldorne`, a Maldorne fork based on `v22.2b14` with the following changes:
 
-- **`ualarm.c` heartbeat fix**: reverted the `#include "std.h"` move that broke the heartbeat timer on modern Linux (see the `master` branch readme for details).
+- **ualarm fix**: reverted the `#include "std.h"` move that broke the internal timer on modern Linux (see the `master` branch readme for details).
+- **PROXY protocol v1 support**: the driver reads a PROXY protocol v1 header on new connections (if present) and uses the real client IP instead of the proxy's IP. Enabled via `#define SUPPORT_PROXY_PROTOCOL` in `local_options`. Backwards compatible — connections without a PROXY header work normally.
 
 The `master` branch is empty, try any other branch to see different versions.
 
