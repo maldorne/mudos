@@ -1256,6 +1256,7 @@ static void hname_handler()
 static void get_user_data P1(interactive_t *, ip)
 {
     static char buf[MAX_TEXT];
+    static char *tmp;
     int text_space;
     int num_bytes;
 #ifdef DEBUG_COMM_FREEZE
@@ -1331,6 +1332,12 @@ static void get_user_data P1(interactive_t *, ip)
 	buf[num_bytes] = '\0';
 	switch (ip->connection_type) {
 	case PORT_TELNET:
+	    /* Sanitize @@ sequences to prevent process_string injection */
+	    while (tmp=strstr(buf, "@@"))
+	    {
+	       tmp[0]='#';
+	       tmp[1]='%';
+	    }
 	    /*
 	     * replace newlines with nulls and catenate to buffer. Also do all
 	     * the useful telnet negotation at this point too. Rip out the sub
@@ -1363,6 +1370,12 @@ static void get_user_data P1(interactive_t *, ip)
 		char *p, *nl;
 		svalue_t *ret;
 
+		/* Sanitize @@ sequences to prevent process_string injection */
+		while (tmp=strstr(buf, "@@"))
+		{
+		   tmp[0]='#';
+		   tmp[1]='%';
+		}
 		memcpy(temp, ip->text + ip->text_start, old_num);
 		memcpy(temp + old_num, buf, num_bytes);
 		temp[num_bytes + old_num] = 0;

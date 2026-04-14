@@ -505,7 +505,7 @@ char *read_file P3(char *, file, int, start, int, len)
 {
     struct stat st;
     FILE *f;
-    char *str, *end;
+    char *str, *end, *tmp;
     register char *p, *p2;
     int size;
 
@@ -555,7 +555,14 @@ char *read_file P3(char *, file, int, start, int, len)
 
 	if (size > st.st_size) {
 	    size = st.st_size;
-	}		
+	}
+
+	/* Sanitize @@ sequences to prevent process_string injection */
+	while (tmp=strstr(str, "@@"))
+	{
+	   tmp[0]='#';
+	   tmp[1]='%';
+	}
 
 	st.st_size -= size;
 	end = str + size;
