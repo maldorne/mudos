@@ -113,6 +113,7 @@ int eval_cost;
 
 void backend()
 {
+    mode_t mymask;
     struct timeval timeout;
     int nb;
     int i;
@@ -132,6 +133,11 @@ void backend()
 	debug_message("No external ports specified.\n");
 
     init_user_conn();		/* initialize user connection socket */
+
+    /* Set umask so created files are group-writable */
+    mymask = 002;
+    umask(mymask);
+
 #ifdef SIGHUP
     signal(SIGHUP, startshutdownMudOS);
 #endif
@@ -528,7 +534,7 @@ int set_heart_beat P2(object_t *, ob, int, to)
 		break;
 	    }
 	}
-	DEBUG_CHECK(index < 0, "Couldn't find enabled object in heart_beat lsit!\n");
+	DEBUG_CHECK(index < 0, "Couldn't find enabled object in heart_beat list!\n");
     } else {
 	heart_beat_t *hb;
 	
