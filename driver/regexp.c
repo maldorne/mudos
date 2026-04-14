@@ -257,7 +257,7 @@ STATIC int strcspn();
 void regerror P1(char *, s) {
     switch (regexp_user) {
     case ED_REGEXP:
-	ED_OUTPUTV(ED_DEST, "ed: regular expression error: %s", s);
+	ED_OUTPUTV(ED_DEST, "ed: regular expression error: %s\n", s);
 	break;
     case EFUN_REGEXP:
 	regexp_error = s;
@@ -291,7 +291,7 @@ regexp *regcomp P2(unsigned char *, exp,
     short *exp2, *dest, c;
 
     if (!exp)
-	FAIL("NULL argument\n");
+	FAIL("NULL argument");
 
     exp2 = (short *)
 	DXALLOC((strlen((char *)exp) + 1) * (sizeof(short[8]) / sizeof(char[8])), 
@@ -317,7 +317,7 @@ regexp *regcomp P2(unsigned char *, exp,
 	    switch (c = *scan++) {
 	    case 0:
 		FREE(exp2);
-		FAIL("Regular expression cannot end with '\\'.  Use \"\\\\\".\n");
+		FAIL("Regular expression cannot end with '\\'.  Use \"\\\\\".");
 		break;
 	    case '(':
 	    case ')':
@@ -330,7 +330,7 @@ regexp *regcomp P2(unsigned char *, exp,
 	    case '{':
 	    case '}':
 		FREE(exp2);
-		FAIL("sorry, unimplemented operator\n");
+		FAIL("sorry, unimplemented operator");
 	    case 'b':
 		*dest++ = '\b';
 		break;
@@ -364,7 +364,7 @@ regexp *regcomp P2(unsigned char *, exp,
     if (regsize >= 32767L)	/* Probably could be 65535L. */
     {
 	FREE(exp2);
-	FAIL("regexp too big\n");
+	FAIL("regexp too big");
     }
 
     /* Allocate space. */
@@ -372,7 +372,7 @@ regexp *regcomp P2(unsigned char *, exp,
 			   TAG_TEMPORARY, "regcomp: 2");
     if (r == (regexp *) NULL) {
 	FREE(exp2);
-	FAIL("out of space\n");
+	FAIL("out of space");
     }
 
     /* Second pass: emit code. */
@@ -451,7 +451,7 @@ static char *reg P2(int, paren,	/* Parenthesized? */
     /* Make an OPEN node, if parenthesized. */
     if (paren) {
 	if (regnpar >= NSUBEXP)
-	    FAIL("too many ()\n");
+	    FAIL("too many ()");
 	parno = regnpar;
 	regnpar++;
 	ret = regnode(OPEN + parno);
@@ -490,12 +490,12 @@ static char *reg P2(int, paren,	/* Parenthesized? */
 
     /* Check for proper termination. */
     if (paren && *regparse++ != RBRAC) {
-	FAIL("unmatched ()\n");
+	FAIL("unmatched ()");
     } else if (!paren && *regparse != '\0') {
 	if (*regparse == RBRAC) {
-	    FAIL("unmatched ()\n");
+	    FAIL("unmatched ()");
 	} else
-	    FAIL("junk on end\n");/* "Can't happen". */
+	    FAIL("junk on end");/* "Can't happen". */
 	/* NOTREACHED */
     }
     return (ret);
@@ -560,7 +560,7 @@ static char *regpiece P1(int *, flagp)
 	return (ret);
     }
     if (!(flags & HASWIDTH) && op != QMARK)
-	FAIL("*+ operand could be empty\n");
+	FAIL("*+ operand could be empty");
     *flagp = (op != PLUSS) ? (WORST | SPSTART) : (WORST | HASWIDTH);
 
     if (op == ASTERIX && (flags & SIMPLE))
@@ -591,7 +591,7 @@ static char *regpiece P1(int *, flagp)
     }
     regparse++;
     if (ISMULT(*regparse))
-	FAIL("nested *?+\n");
+	FAIL("nested *?+");
 
     return (ret);
 }
@@ -647,7 +647,7 @@ static char *regatom P1(int *, flagp)
 			class = (CHARBITS & *(regparse - 2)) + 1;
 			classend = (CHARBITS & *(regparse));
 			if (class > classend + 1)
-			    FAIL("invalid [] range\n");
+			    FAIL("invalid [] range");
 			for (; class <= classend; class++)
 			    regc(class);
 			regparse++;
@@ -657,7 +657,7 @@ static char *regatom P1(int *, flagp)
 	    }
 	    regc('\0');
 	    if (*regparse != RSQBRAC)
-		FAIL("unmatched []\n");
+		FAIL("unmatched []");
 	    regparse++;
 	    *flagp |= HASWIDTH | SIMPLE;
 	}
@@ -671,16 +671,16 @@ static char *regatom P1(int *, flagp)
     case '\0':
     case OR_OP:
     case RBRAC:
-	FAIL("internal urp\n");	/* Supposed to be caught earlier. */
+	FAIL("internal urp");	/* Supposed to be caught earlier. */
 	break;
     case ASTERIX:
-	FAIL("* follows nothing\n");
+	FAIL("* follows nothing");
 	break;
     case PLUSS:
-	FAIL("+ follows nothing\n");
+	FAIL("+ follows nothing");
 	break;
     case QMARK:
-	FAIL("? follows nothing\n");
+	FAIL("? follows nothing");
 	break;
     default:{
 	    register int len;
@@ -690,7 +690,7 @@ static char *regatom P1(int *, flagp)
 	    for (len = 0; regparse[len] &&
 	     !(regparse[len] & SPECIAL) && regparse[len] != RSQBRAC; len++);
 	    if (len <= 0) {
-		FAIL("unexpected ]\n");
+		FAIL("unexpected ]");
 	    }
 	    ender = *(regparse + len);
 	    if (len > 1 && ISMULT(ender))
@@ -846,12 +846,12 @@ int regexec P2(register regexp *, prog, register char *, string)
 
     /* Be paranoid... */
     if (prog == (regexp *) NULL || string == (char *) NULL) {
-	regerror("NULL parameter\n");
+	regerror("NULL parameter");
 	return (0);
     }
     /* Check validity of program. */
     if (UCHARAT(prog->program) != MAGIC) {
-	regerror("corrupted program\n");
+	regerror("corrupted program");
 	return (0);
     }
     /* If there is a "must appear" string, look for it. */
@@ -1109,7 +1109,7 @@ static int regmatch P1(char *, prog)
 	    return (1);		/* Success! */
 	    break;
 	default:
-	    regerror("memory corruption\n");
+	    regerror("memory corruption");
 	    return (0);
 	    break;
 	}
@@ -1121,7 +1121,7 @@ static int regmatch P1(char *, prog)
      * We get here only if there's trouble -- normally "case END" is the
      * terminating point.
      */
-    regerror("corrupted pointers\n");
+    regerror("corrupted pointers");
     return (0);
 }
 
@@ -1160,7 +1160,7 @@ static int regrepeat P1(char *, p)
 	}
 	break;
     default:			/* Oh dear.  Called inappropriately. */
-	regerror("internal foulup\n");
+	regerror("internal foulup");
 	count = 0;		/* Best compromise. */
 	break;
     }
@@ -1317,7 +1317,7 @@ static char *regprop P1(char *, op)
 	p = "PLUS";
 	break;
     default:
-	regerror("corrupted opcode\n");
+	regerror("corrupted opcode");
 	break;
     }
     if (p != (char *) NULL)
@@ -1368,11 +1368,11 @@ char *regsub P4(regexp *, prog, char *, source, char *, dest, int, n)
 
     if (prog == (regexp *) NULL ||
 	source == (char *) NULL || dest == (char *) NULL) {
-	regerror("NULL parm to regsub\n");
+	regerror("NULL parm to regsub");
 	return NULL;
     }
     if (UCHARAT(prog->program) != MAGIC) {
-	regerror("damaged regexp fed to regsub\n");
+	regerror("damaged regexp fed to regsub");
 	return NULL;
     }
     src = source;
@@ -1389,7 +1389,7 @@ char *regsub P4(regexp *, prog, char *, source, char *, dest, int, n)
 	    if (c == '\\' && (*src == '\\' || *src == '&'))
 		c = *src++;
 	    if (--n < 0) {	/* amylaar */
-		regerror("line too long\n");
+		regerror("line too long");
 		return NULL;
 	    }
 	    *dst++ = c;
@@ -1397,19 +1397,19 @@ char *regsub P4(regexp *, prog, char *, source, char *, dest, int, n)
 		   prog->endp[no] != (char *) NULL) {
 	    len = prog->endp[no] - prog->startp[no];
 	    if ((n -= len) < 0) {	/* amylaar */
-		regerror("line too long\n");
+		regerror("line too long");
 		return NULL;
 	    }
 	    strncpy(dst, prog->startp[no], len);
 	    dst += len;
 	    if (len != 0 && *(dst - 1) == '\0') {	/* strncpy hit NUL. */
-		regerror("damaged match string\n");
+		regerror("damaged match string");
 		return NULL;
 	    }
 	}
     }
     if (--n < 0) {		/* amylaar */
-	regerror("line too long\n");
+	regerror("line too long");
 	return NULL;
     }
     *dst = '\0';
