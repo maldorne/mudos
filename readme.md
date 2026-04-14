@@ -18,7 +18,22 @@ the USENET groups rec.games.mud.{admin,announce,misc,lp,tiny,diku}.
 
 ## Branches
 
-This branch of the project contains the version `v21.7`, ready to use.
+This branch contains `v21.7-maldorne`, a Maldorne fork that merges `v21.7` with the patches from the `v21.7b21_fr` branch, plus our own additions:
+
+**From v21.7b21_fr:**
+- Build fixes: missing includes (`unistd.h`, `crypt.h`), `-Bshared` flag for LPC-to-C
+- lex.c memory corruption bugfix in `get_text_block()`
+- `umask(002)` for group-writable file creation
+- Anti-`@@` input sanitization to prevent `process_string` injection
+- `DISCWORLD_ADD_ACTION`: priority-based action matching, `event()`, `actions_defined()`, compat efuns
+- `member_array()` 4th argument for prefix matching
+- `add_action()` flag passthrough (removed `& 3` mask)
+- regexp error message cleanup (remove trailing newlines)
+- NLP parser relocated from `packages/` to driver root with bugfixes
+- Mapping restore hash distribution fix, `stralloc.h` macro precedence fix
+
+**Maldorne additions:**
+- PROXY protocol v1 support (`#define SUPPORT_PROXY_PROTOCOL` in `local_options`)
 
 The `master` branch is empty, try any other branch to see different versions.
 
@@ -26,11 +41,11 @@ The `master` branch is empty, try any other branch to see different versions.
 
 - Build the container image (from project base directory)
 
-  `docker build --no-cache . -t ghcr.io/maldorne/mudos:v21.7`
+  `docker build --no-cache . -t ghcr.io/maldorne/mudos:v21.7-maldorne`
 
 - Run the container and take a look inside using a terminal
 
-  `docker run --rm -ti ghcr.io/maldorne/mudos:v21.7 /bin/bash`
+  `docker run --rm -ti ghcr.io/maldorne/mudos:v21.7-maldorne /bin/bash`
 
   Inside the container, in `/opt/mud`, you can find the directories `driver` 
   (with the source code of MudOS) and `bin`, with the two binaries needed
@@ -38,4 +53,4 @@ The `master` branch is empty, try any other branch to see different versions.
 
 - Publish the container in Docker Hub
 
-  `docker push ghcr.io/maldorne/mudos:v21.7`
+  `docker push ghcr.io/maldorne/mudos:v21.7-maldorne`

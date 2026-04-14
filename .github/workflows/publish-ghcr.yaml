@@ -2,7 +2,7 @@ name: Build and Publish to Github Container Registry
 
 on:
   push:
-    branches: [ v21.7 ]
+    branches: [ v21.7-maldorne ]
 
 jobs:
   build_and_publish:
@@ -14,7 +14,7 @@ jobs:
           docker login --username maldorne-bot --password ${{ secrets.MALDORNE_BOT_GHCR_TOKEN }} ghcr.io
       - name: Build image
         run: |
-          docker build --no-cache . -t ghcr.io/maldorne/mudos:v21.7
+          docker build --no-cache . -t ghcr.io/maldorne/mudos:v21.7-maldorne
       - name: Publish image
         run: |
-          docker push ghcr.io/maldorne/mudos:v21.7
+          docker push ghcr.io/maldorne/mudos:v21.7-maldorne
