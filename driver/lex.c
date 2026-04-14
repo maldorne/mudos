@@ -753,7 +753,7 @@ get_text_block P1(char *, term)
      * free chunks
      */
     for (i = curchunk; i >= 0; i--)
-	FREE(text_line[i]);
+	FREE(text_line[curchunk]);
 
     return res;
 }
