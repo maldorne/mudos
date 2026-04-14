@@ -28,6 +28,7 @@
 #include "debug.h"
 #include "ed.h"
 #include "md.h"
+#include <unistd.h>
 #ifdef LPC_TO_C
 #include "interface.h"
 #include "compile_file.h"

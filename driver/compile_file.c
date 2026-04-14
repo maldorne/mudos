@@ -84,9 +84,9 @@ static void compile_and_link P2(char *, file, char *, ident) {
     /* Do the compile */
     sprintf(command,
 #ifdef sgi
-	    "%s %s -shared -I%s -G 0 -o %s.so %s.c > %s 2>&1",
+	    "%s %s -Bshared -I%s -G 0 -o %s.so %s.c > %s 2>&1",
 #else
-	    "%s %s -shared -I%s -o %s.so %s.c > %s 2>&1",
+	    "%s %s -Bshared -I%s -o %s.so %s.c > %s 2>&1",
 #endif
 	    COMPILER, CFLAGS,
 	    "lpc2c", file, file, "lpc2c/errors");

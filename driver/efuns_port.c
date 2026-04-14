@@ -14,6 +14,7 @@
 #include "lint.h"
 #include "include/localtime.h"
 #include "port.h"
+#include <crypt.h>
 
 /* get a value for CLK_TCK for use by times() */
 #if (defined(TIMES) && !defined(RUSAGE))
