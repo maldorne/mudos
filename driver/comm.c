@@ -983,6 +983,47 @@ static void new_user_handler P1(int, which)
     set_prompt("> ");
     
     memcpy((char *) &all_users[i]->addr, (char *) &addr, length);
+
+#ifdef SUPPORT_PROXY_PROTOCOL
+    /*
+     * PROXY protocol v1 support.
+     * If the first bytes on the connection are "PROXY ", read the header
+     * line and replace the stored client address with the real one.
+     * Format: "PROXY TCP4 <src_ip> <dst_ip> <src_port> <dst_port>\r\n"
+     * If the connection does not start with "PROXY ", leave it untouched
+     * (backwards compatible with direct connections).
+     */
+    {
+	char proxy_buf[108]; /* v1 max line length */
+	int n;
+
+	n = recv(new_socket_fd, proxy_buf, sizeof(proxy_buf) - 1, MSG_PEEK);
+	if (n >= 6 && memcmp(proxy_buf, "PROXY ", 6) == 0) {
+	    char *end = (char *)memchr(proxy_buf, '\n', n);
+	    if (end) {
+		int hdr_len = (end - proxy_buf) + 1;
+		char proto[6], src_ip[46], dst_ip[46];
+		int src_port, dst_port;
+
+		/* consume the header from the socket */
+		recv(new_socket_fd, proxy_buf, hdr_len, 0);
+		proxy_buf[hdr_len] = '\0';
+
+		if (sscanf(proxy_buf, "PROXY %5s %45s %45s %d %d",
+			   proto, src_ip, dst_ip, &src_port, &dst_port) == 5) {
+		    struct in_addr real_addr;
+		    if (inet_aton(src_ip, &real_addr)) {
+			all_users[i]->addr.sin_addr = real_addr;
+			all_users[i]->addr.sin_port = htons((unsigned short)src_port);
+			addr.sin_addr = real_addr;
+			debug(512, ("PROXY protocol: real client IP is %s\n", src_ip));
+		    }
+		}
+	    }
+	}
+    }
+#endif /* SUPPORT_PROXY_PROTOCOL */
+
     debug(512, ("New connection from %s.\n", inet_ntoa(addr.sin_addr)));
     num_user++;
     /*
