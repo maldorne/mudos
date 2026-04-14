@@ -304,7 +304,7 @@ copyMapping P1(mapping_t *,m)
 }
 
 INLINE int
-restore_hash_string P2(char **, val, svalue_t *, sv)
+restore_hash_string P3(char **, val, int *, a, svalue_t *, sv)
 {
     register char *cp = *val;
     char c, *start = cp;
@@ -336,6 +336,7 @@ restore_hash_string P2(char **, val, svalue_t *, sv)
                     sv->u.string = make_shared_string(start);
 		    sv->type = T_STRING;
 		    sv->subtype = STRING_SHARED;
+		    *a = (unsigned int)sv->u.string;
                     return 0;
 		}
                 else return ROB_STRING_ERROR;
@@ -350,6 +351,7 @@ restore_hash_string P2(char **, val, svalue_t *, sv)
     sv->u.string = make_shared_string(start);
     sv->type = T_STRING;
     sv->subtype = STRING_SHARED;
+    *a = (unsigned int)sv->u.string;
     return 0;
 }
     

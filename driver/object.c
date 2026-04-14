@@ -22,7 +22,7 @@ int tot_alloc_object, tot_alloc_object_size;
 char *save_mapping PROT ((mapping_t *m));
 INLINE static int restore_array PROT((char **str, svalue_t *));
 INLINE static int restore_class PROT((char **str, svalue_t *));
-int restore_hash_string PROT((char **str, svalue_t *));
+int restore_hash_string PROT((char **str, int *a, svalue_t *));
 
 INLINE int
 valid_hide P1(object_t *, obj)
@@ -522,7 +522,7 @@ int growMap PROT((mapping_t *));
 static int
 restore_mapping P2(char **,str, svalue_t *, sv)
 {
-    int size, i, mask, oi, count = 0;
+    int size, i, oi, mask, count = 0;
     char c;
     mapping_t *m;
     svalue_t key, value;
@@ -548,7 +548,7 @@ restore_mapping P2(char **,str, svalue_t *, sv)
 	case '"':
 	    {
 		*str = cp;
-		if ((err = restore_hash_string(str, &key)))
+		if ((err = restore_hash_string(str, &oi, &key)))
 		    goto key_error;
 		cp = *str;
 		cp++;
@@ -558,20 +558,23 @@ restore_mapping P2(char **,str, svalue_t *, sv)
 	case '(':
 	    {
 		save_svalue_depth++;
-		if (*cp == '[') {
+		if (*cp == '['){
 		    *str = ++cp;
 		    if ((err = restore_mapping(str, &key)))
 			goto key_error;
+		    oi = (POINTER_INT) key.u.map;
 		}
 		else if (*cp == '{'){
 		    *str = ++cp;
 		    if ((err = restore_array(str, &key)))
 			goto key_error;
+		    oi = (POINTER_INT) key.u.arr;
 		}
 		else if (*cp == '/') {
 		    *str = ++cp;
 		    if ((err = restore_class(str, &key)))
 			goto key_error;
+		    oi = (POINTER_INT) key.u.arr;
 		}
 		else goto generic_key_error;
 		cp = *str;
@@ -581,7 +584,7 @@ restore_mapping P2(char **,str, svalue_t *, sv)
 	    
 	case ':':
 	    {
-		key.u.number = 0;
+		oi = key.u.number = 0;
 		key.type = T_NUMBER;
 		break;
 	    }
@@ -597,15 +600,15 @@ restore_mapping P2(char **,str, svalue_t *, sv)
 	    if ((c = *cp++) < '0' || c > '9') {
 		goto key_numeral_error;
 	    }
-	    PARSE_NUMERIC(key.u.real = -(f1+res); key.type = T_REAL,
-			  key.type = T_NUMBER; key.u.number = -res,
+	    PARSE_NUMERIC(oi = 0;key.u.real = -(f1+res); key.type = T_REAL,
+			  key.type = T_NUMBER; key.u.number = -(oi = res),
 			  goto key_numeral_error)
 		
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':
 	    {
-		PARSE_NUMERIC(key.u.real = f1+res;key.type = T_REAL,
-			      key.type = T_NUMBER; key.u.number = res,
+		PARSE_NUMERIC(oi = 0; key.u.real = f1+res;key.type = T_REAL,
+			      key.type = T_NUMBER; oi = key.u.number = res,
 			      goto key_numeral_error)
 	    }
 	    
@@ -681,7 +684,6 @@ restore_mapping P2(char **,str, svalue_t *, sv)
 
 	/* both key and value are valid, referenced svalues */
 
-	oi = (key.u.number > 0 ? key.u.number : -key.u.number);
 	i = oi & mask;
 	if ((elt2 = elt = a[i])) {
 	    do {

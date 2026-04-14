@@ -872,7 +872,7 @@ int file_length P1(char *, file)
   char *p, *newp;
 
   file = check_valid_path(file, current_object, "file_size", 0);
-  
+
   if (!file) return -1;
   if (stat(file, &st) == -1)
       return -1;
@@ -880,14 +880,14 @@ int file_length P1(char *, file)
       return -2;
   if (!(f = fopen(file, "r")))
       return -1;
-  
+
   do {
       num = fread(buf, 1, 2048, f);
       p = buf - 1;
       while ((newp = memchr(p + 1, '\n', num))) {
-	  num -= (newp - p);
-	  p = newp;
-	  ret++;
+          num -= (newp - p);
+          p = newp;
+          ret++;
       }
   } while (!feof(f));
 
@@ -941,7 +941,7 @@ void f_replaceable PROT((void)) {
     
     for (i = 0; i < num; i++) {
 	if (functions[i].flags & (NAME_INHERITED | NAME_NO_CODE)) continue;
-	if (strcmp(functions[i].name, APPLY_CREATE)==0) continue;
+	if (strcmp(functions[i].name, "setup")==0) continue;
 	break;
     }
     free_svalue(sp, "f_replaceable");

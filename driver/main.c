@@ -654,6 +654,7 @@ static void PSIG(sig_iot)
 {
     fatal("Aborted(IOT)");
 }
+
 #endif				/* !DEBUG */
 
 #endif				/* TRAP_CRASHES */

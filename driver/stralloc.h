@@ -80,10 +80,10 @@ typedef struct block_s {
     unsigned short refs;	/* reference count    */
 }       block_t;
 
-#define NEXT(x) (x)->next
-#define REFS(x) (x)->refs
+#define NEXT(x) ((x)->next)
+#define REFS(x) ((x)->refs)
 #define EXTRA_REF(x) (x)->extra_ref
-#define SIZE(x) (x)->size
+#define SIZE(x) ((x)->size)
 #define BLOCK(x) (((block_t *)(x)) - 1)	/* pointer arithmetic */
 #define STRING(x) ((char *)(x + 1))
 
