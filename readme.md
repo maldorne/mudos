@@ -25,6 +25,7 @@ On this repository, you could find different branches for the following versions
 
  - `v21.7b21_fr`
  - `v21.7`
+ - `v21.7-maldorne` (Maldorne fork, based on `v21.7` + `v21.7b21_fr` patches)
  - `v22.2b13`
  - `v22.2b14`
  - `v22.2-maldorne` (Maldorne fork, based on `v22.2b14` with fixes)
@@ -37,6 +38,7 @@ The `master` branch is empty, try any other branch to see its contents.
 | ---------------- | --------------------------------------- | ------------------- |
 | `v21.7b21_fr`    |                                         | Working with Docker |
 | `v21.7`          |                                         | Working with Docker |
+| `v21.7-maldorne` | Fork of v21.7 with minor fixes and addons | Working with Docker |
 | `v22.2b13`       |                                         | Working with Docker |
 | `v22.2b14`       | Last version of MudOS                   | See note below*     |
 | `v22.2-maldorne` | Fork of b14 with minor fixes and addons | Working with Docker |
@@ -72,8 +74,9 @@ These are the versions we currently run (or plan to run) in the [Maldorne](https
 
 | Version          | Used by                                                                                                                                                                                      | Notes                                                                                       |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `v21.7b21_fr`    | [Iluminado](https://maldorne.org/games/#iluminado-mud), [Ancient Kingdoms](https://maldorne.org/games/#ancient-kingdoms), [Reinos de Leyenda](https://maldorne.org/games/#reinos-de-leyenda) | In production.                                                                              |
+| `v21.7b21_fr`    | —                                                                                                                                                                                            | Used in production before switching to v21.7-maldorne. Works correctly.                     |
 | `v21.7`          | —                                                                                                                                                                                            | Compiled and published, not used by any of our MUDs. Should work; feedback welcome.         |
+| `v21.7-maldorne` | [Iluminado](https://maldorne.org/games/#iluminado-mud), [Ancient Kingdoms](https://maldorne.org/games/#ancient-kingdoms), [Reinos de Leyenda](https://maldorne.org/games/#reinos-de-leyenda) | In production. Fork of v21.7 with minor fixes and addons.                                   |
 | `v22.2b13`       | —                                                                                                                                                                                            | Used in production with Ciudad Capital before switching to v22.2-maldorne. Works correctly. |
 | `v22.2b14`       | —                                                                                                                                                                                            | Compiled and published, not used by any of our MUDs. See note below*.                       |
 | `v22.2-maldorne` | [Ciudad Capital](https://maldorne.org/games/#ciudad-capital-v1)                                                                                                                              | In production. Fork of b14 with minor fixes and addons.                                     |
@@ -96,9 +99,34 @@ Our `-maldorne` branches (e.g. `v22.2-maldorne`) are **not** new versions of Mud
 
 ### Changes included in each fork branch
 
+#### `v21.7-maldorne` (based on `v21.7` + `v21.7b21_fr` patches)
+
+Changes ported from `v21.7b21_fr` (patches originally created by the developers of **Final Realms** and **Reinos de Leyenda**):
+
+| Change | Files | Description |
+|--------|-------|-------------|
+| Build fixes | `driver/efuns_main.c`, `driver/efuns_port.c`, `driver/compile_file.c` | Add missing `#include <unistd.h>` and `#include <crypt.h>`, use `-Bshared` for LPC-to-C. |
+| lex.c bugfix | `driver/lex.c` | Fix memory corruption in `get_text_block()` — was freeing wrong chunk indices. |
+| umask | `driver/backend.c` | Set `umask(002)` so files created by the driver are group-writable. |
+| Anti-@@ sanitization | `driver/comm.c`, `driver/file.c` | Replace `@@` sequences in user input and `read_file()` to prevent `process_string` injection. |
+| DISCWORLD_ADD_ACTION | `driver/simulate.c`, `driver/object.h`, `driver/func_spec.c`, `driver/efuns_main.c`, etc. | Priority-based action matching, `event()`, `actions_defined()`, compat efuns (`cat`, `log_file`, `extract`, `next_living`). |
+| member_array 4th arg | `driver/func_spec.c`, `driver/efuns_main.c` | Optional 4th argument for prefix matching mode. |
+| add_action flag fix | `driver/efuns_main.c` | Removed `& 3` mask on the flag argument, allowing priority values beyond 0-3. |
+| regexp cleanup | `driver/regexp.c` | Remove trailing `\n` from error messages to prevent double newlines. |
+| Parser relocation | `driver/parser.c`, `driver/parser.h`, `driver/parser_spec.c` | NLP parser moved from `packages/` to driver root with null-pointer and object-loading bugfixes. |
+| Misc fixes | `driver/mapping.c`, `driver/stralloc.h`, `driver/object.c`, etc. | Mapping restore hash distribution fix, `stralloc.h` macro precedence fix, contrib/matrix fixes. |
+
+Maldorne additions:
+
+| Change | Files | Description |
+|--------|-------|-------------|
+| PROXY protocol v1 | `driver/comm.c`, `driver/local_options` | Reads a [PROXY protocol v1](https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt) header on new connections and uses the real client IP. Enabled via `#define SUPPORT_PROXY_PROTOCOL` in `local_options`. Backwards compatible. |
+
 #### `v22.2-maldorne` (based on `v22.2b14`)
 
-| Change     | File              | Description                                                                                                                                                                                   |
-| ---------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+Maldorne additions:
+
+| Change | Files | Description |
+|--------|-------|-------------|
 | ualarm fix | `driver/ualarm.c` | Reverted the `#include "std.h"` move that broke the internal timer on modern Linux, causing `uptime()` to be permanently 0. See the [note above](#about-the-last-available-version-of-mudos). |
 | PROXY protocol v1 | `driver/comm.c`, `driver/local_options` | Reads a [PROXY protocol v1](https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt) header on new connections and uses the real client IP. Enabled via `#define SUPPORT_PROXY_PROTOCOL` in `local_options`. Backwards compatible. |
