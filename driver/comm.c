@@ -1569,12 +1569,29 @@ static void new_user_handler P1(int, which)
      * Format: "PROXY TCP4 <src_ip> <dst_ip> <src_port> <dst_port>\r\n"
      * If the connection does not start with "PROXY ", leave it untouched
      * (backwards compatible with direct connections).
+     *
+     * The socket is non-blocking at this point, so we use select() with
+     * a short timeout to wait for data before peeking. This avoids a
+     * race condition where MSG_PEEK returns EWOULDBLOCK because the
+     * PROXY header hasn't arrived yet from the reverse proxy.
      */
     {
 	char proxy_buf[108]; /* v1 max line length */
 	int n;
+	fd_set readfds;
+	struct timeval tv;
 
-	n = recv(new_socket_fd, proxy_buf, sizeof(proxy_buf) - 1, MSG_PEEK);
+	FD_ZERO(&readfds);
+	FD_SET(new_socket_fd, &readfds);
+	tv.tv_sec = 0;
+	tv.tv_usec = 100000; /* 100ms timeout */
+
+	n = select(new_socket_fd + 1, &readfds, NULL, NULL, &tv);
+	if (n > 0)
+	    n = recv(new_socket_fd, proxy_buf, sizeof(proxy_buf) - 1, MSG_PEEK);
+	else
+	    n = 0;
+
 	if (n >= 6 && memcmp(proxy_buf, "PROXY ", 6) == 0) {
 	    char *end = (char *)memchr(proxy_buf, '\n', n);
 	    if (end) {
