@@ -993,6 +993,12 @@ static void new_user_handler P1(int, which)
      * If the connection does not start with "PROXY ", leave it untouched
      * (backwards compatible with direct connections).
      *
+     * The header is dispatched by protocol token: TCP4 is parsed as IPv4;
+     * TCP6 is logged and ignored (this driver is built without IPv6
+     * support); UNKNOWN or any other token causes the header to be
+     * dropped per the spec, so the connection keeps the proxy's IP from
+     * getpeername().
+     *
      * The socket is non-blocking at this point, so we use select() with
      * a short timeout to wait for data before peeking. This avoids a
      * race condition where MSG_PEEK returns EWOULDBLOCK because the
@@ -1017,7 +1023,8 @@ static void new_user_handler P1(int, which)
 
 	if (n >= 6 && memcmp(proxy_buf, "PROXY ", 6) == 0) {
 	    char *end = (char *)memchr(proxy_buf, '\n', n);
-	    if (end) {
+	    /* spec requires CRLF terminator; reject bare LF */
+	    if (end && end > proxy_buf && *(end - 1) == '\r') {
 		int hdr_len = (end - proxy_buf) + 1;
 		char proto[6], src_ip[46], dst_ip[46];
 		int src_port, dst_port;
@@ -1028,13 +1035,18 @@ static void new_user_handler P1(int, which)
 
 		if (sscanf(proxy_buf, "PROXY %5s %45s %45s %d %d",
 			   proto, src_ip, dst_ip, &src_port, &dst_port) == 5) {
-		    struct in_addr real_addr;
-		    if (inet_aton(src_ip, &real_addr)) {
-			all_users[i]->addr.sin_addr = real_addr;
-			all_users[i]->addr.sin_port = htons((unsigned short)src_port);
-			addr.sin_addr = real_addr;
-			debug(512, ("PROXY protocol: real client IP is %s\n", src_ip));
+		    if (strcmp(proto, "TCP4") == 0) {
+			struct in_addr real_addr;
+			if (inet_aton(src_ip, &real_addr)) {
+			    all_users[i]->addr.sin_addr = real_addr;
+			    all_users[i]->addr.sin_port = htons((unsigned short)src_port);
+			    addr.sin_addr = real_addr;
+			    debug(512, ("PROXY protocol: real client IP is %s\n", src_ip));
+			}
+		    } else if (strcmp(proto, "TCP6") == 0) {
+			debug(512, ("PROXY protocol: received TCP6 address %s but driver was compiled without IPv6 support, ignoring.\n", src_ip));
 		    }
+		    /* else: UNKNOWN or unrecognized proto, drop header per spec */
 		}
 	    }
 	}
